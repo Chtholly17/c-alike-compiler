@@ -1,0 +1,19 @@
+﻿  Common.cpp
+  IntermediateCode.cpp
+E:\VS\compiler\compiler\compiler\IntermediateCode.cpp(17,77): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\IntermediateCode.cpp(66,42): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\IntermediateCode.cpp(89,41): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\IntermediateCode.cpp(196,20): warning C4267: “return”: 从“size_t”转换到“int”，可能丢失数据
+  LexicalAnalyser.cpp
+  main.cpp
+  ObjectCodeGenerator.cpp
+E:\VS\compiler\compiler\compiler\ObjectCodeGenerator.cpp(120,23): warning C4244: “=”: 从“__int64”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\ObjectCodeGenerator.cpp(160,15): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\ObjectCodeGenerator.cpp(357,44): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\ObjectCodeGenerator.cpp(654,39): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+  Optimizer.cpp
+  ParserAndSemanticAnalyser.cpp
+E:\VS\compiler\compiler\compiler\ParserAndSemanticAnalyser.cpp(403,59): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+E:\VS\compiler\compiler\compiler\ParserAndSemanticAnalyser.cpp(538,42): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+  正在生成代码...
+  compiler.vcxproj -> E:\VS\compiler\compiler\x64\Debug\compiler.exe

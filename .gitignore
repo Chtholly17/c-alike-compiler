@@ -1,0 +1,3 @@
+# ignore all the files in the x64 floder in this project
+./x64/*
+*.vcxproj*
