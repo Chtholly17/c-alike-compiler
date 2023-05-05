@@ -1,5 +1,6 @@
 #pragma once
-#include "Common.h"
+#include "utils.h"
+#include "Token.h"
 #include "IntermediateCode.h"
 #ifndef PARSER_H
 #define PARSER_H

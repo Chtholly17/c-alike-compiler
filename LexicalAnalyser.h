@@ -1,12 +1,21 @@
 #pragma once
-#include"Common.h"
+#include "utils.h"
+#include "Token.h"
+
+/**
+ * @brief lexical analyser
+ * @author chtholly
+ * @details analyse the source file and output the result as a list of tokens
+ */
 class LexicalAnalyser {
 private:
+	// the source file
 	ifstream src;
+	// result, a list of tokens
 	list<Token> result;
+	// the current line number
 	int lineCount;
 private:
-	void openFile(const char* path);
 	char getNextChar();
 	Token getNextToken();
 	void outputToStream(ostream&out);

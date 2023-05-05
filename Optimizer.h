@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include "utils.h"
 #include "IntermediateCode.h"
 
 class Optimizer {

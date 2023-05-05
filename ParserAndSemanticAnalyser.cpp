@@ -501,8 +501,8 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
 	for (list<Token>::iterator iter = words.begin(); iter != words.end(); ) {
 		outputSymbolStack(out);
 		outputStateStack(out);
-		LexicalType LT = iter->first;
-		string word = iter->second;
+		TokenType LT = iter->getType();
+		string word = iter->getValue();
 
 		//ºöÂÔĞĞ×¢ÊÍºÍ¶Î×¢ÊÍ
 		if (LT == LCOMMENT || LT == PCOMMENT) {

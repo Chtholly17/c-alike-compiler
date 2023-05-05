@@ -1,23 +1,18 @@
 #include "LexicalAnalyser.h"
 
-string token_to_string(Token t) {
-	const char* LexicalTypeStr[] = {
-	"ENDFILE", "ERROR",
-	"IF", "ELSE", "INT", "RETURN", "VOID", "WHILE",
-	"ID", "NUM",
-	"LBRACE", "RBRACE", "GTE", "LTE", "NEQ", "EQ", "ASSIGN", "LT", "GT", "PLUS", "MINUS", "MULT", "DIV", "LPAREN", "RPAREN", "SEMI", "COMMA",
-	"LCOMMENT", "PCOMMENT"
-	};
-
-	string res;
-	res += LexicalTypeStr[t.first];
-	res += "  " + t.second;
-	return res;
-}
-
+/**
+ * @brief Construct a new Lexical Analyser:: Lexical Analyser object
+ * @author: chtholly
+ * @param path: the path of the source file
+ */
 LexicalAnalyser::LexicalAnalyser(const char* path) {
 	lineCount = 0;
-	openFile(path);
+	src.open(path, ios::in);
+	// failed to open the source file
+	if (!src.is_open()) {
+		cerr << "file " << path << " open error" << endl;
+		exit(-1);
+	}
 }
 
 LexicalAnalyser::~LexicalAnalyser() {
@@ -26,15 +21,8 @@ LexicalAnalyser::~LexicalAnalyser() {
 	}
 }
 
-void LexicalAnalyser::openFile(const char* path) {
-	src.open(path, ios::in);
-	if (!src.is_open()) {
-		cerr << "file " << path << " open error" << endl;
-		exit(-1);
-	}
-}
 
-//»ñÈ¡ÏÂÒ»¸ö×Ö·û£¬ºöÂÔ¿Õ°×·û
+//
 char LexicalAnalyser::getNextChar() {
 	char c;
 	while (src >> c) {
@@ -121,17 +109,17 @@ Token LexicalAnalyser::getNextToken() {
 				return Token(NEQ, "!=");
 			}
 			else {
-				return Token(ERROR, string("´Ê·¨·ÖÎöµÚ")+to_string(lineCount)+string("ÐÐ£ºÎ´Ê¶±ðµÄ·ûºÅ!"));
+				return Token(ERROR, string("ï¿½Ê·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")+to_string(lineCount)+string("ï¿½Ð£ï¿½Î´Ê¶ï¿½ï¿½Ä·ï¿½ï¿½ï¿½!"));
 			}
 			break;
 		case '/':
-			//ÐÐ×¢ÊÍ
+			//ï¿½ï¿½×¢ï¿½ï¿½
 			if (src.peek() == '/') {
 				char buf[1024];
 				src.getline(buf, 1024);
 				return Token(LCOMMENT, string("/")+buf);
 			}
-			//¶Î×¢ÊÍ
+			//ï¿½ï¿½×¢ï¿½ï¿½
 			else if (src.peek() == '*') {
 				src.get();
 				string buf = "/*";
@@ -146,12 +134,12 @@ Token LexicalAnalyser::getNextToken() {
 						}
 					}
 				}
-				//¶Áµ½×îºó¶¼Ã»ÕÒµ½*/£¬Òò²»Âú×ãwhileÑ­»·Ìõ¼þÍË³ö
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Òµï¿½*/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½whileÑ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½
 				if (src.eof()) {
-					return Token(ERROR, string("´Ê·¨·ÖÎöµÚ")+to_string(lineCount)+string("ÐÐ£º¶Î×¢ÊÍÃ»ÓÐÆ¥ÅäµÄ*/"));
+					return Token(ERROR, string("ï¿½Ê·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")+to_string(lineCount)+string("ï¿½Ð£ï¿½ï¿½ï¿½×¢ï¿½ï¿½Ã»ï¿½ï¿½Æ¥ï¿½ï¿½ï¿½*/"));
 				}
 			}
-			//³ý·¨
+			//ï¿½ï¿½ï¿½ï¿½
 			else {
 				return Token(DIV, "/");
 			}
@@ -206,7 +194,7 @@ Token LexicalAnalyser::getNextToken() {
 				}
 			}
 			else {
-				return Token(ERROR, string("´Ê·¨·ÖÎöµÚ") + to_string(lineCount) + string("ÐÐ£ºÎ´Ê¶±ðµÄ·ûºÅ") + c);
+				return Token(ERROR, string("Lexical analyser detected unknow Token ") + c + string("in line ") + to_string(lineCount));
 			}
 	}
 	return Token(ERROR, "UNKOWN ERROR");
@@ -216,23 +204,23 @@ void LexicalAnalyser::analyse() {
 	while (1) {
 		Token t = getNextToken();
 		result.push_back(t);
-		if (t.first == ERROR) {
-			outputError(t.second);
+		if (t.getType() == ERROR) {
+			outputError(t.getValue());
 		}
-		else if (t.first == ENDFILE) {
+		else if (t.getType() == ENDFILE) {
 			break;
 		}
 	}
 }
 
 void LexicalAnalyser::outputToStream(ostream&out) {
-	if (result.back().first == ERROR) {
-		out << token_to_string(result.back())<<endl;
+	if (result.back().getType() == ERROR) {
+		out << result.back().toString() <<endl;
 	}
 	else {
 		list<Token>::iterator iter;
 		for (iter = result.begin(); iter != result.end(); iter++) {
-			out << token_to_string(*iter) << endl;
+			out << (*iter).toString() << endl;
 		}
 	}
 }
