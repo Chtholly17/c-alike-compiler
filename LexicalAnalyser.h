@@ -16,8 +16,11 @@ private:
 	// the current line number
 	int lineCount;
 private:
-	char getNextChar();
-	Token getNextToken();
+	// read the source, get the next char and ignore the space and tab
+	char getChar();
+	// read from the source and get the next token
+	Token getToken();
+	// output the result to the stream
 	void outputToStream(ostream&out);
 public:
 	LexicalAnalyser(const char* path);

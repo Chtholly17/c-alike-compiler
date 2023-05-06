@@ -35,6 +35,9 @@ private:
 
 public:
 	Token(TokenType type, string value) :type(type), value(value) {};
+	Token(string value);
+	// if the token is a reserved word
+	bool isReservedWord();
     // getter and setter
 	TokenType getType() { return type; }
 	string getValue() { return value; }

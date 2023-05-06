@@ -40,4 +40,5 @@ struct Block {
 
 void outputError(string err);
 
+
 #endif // !UTILS_H
