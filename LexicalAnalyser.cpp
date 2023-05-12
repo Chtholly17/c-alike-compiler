@@ -140,6 +140,7 @@ Token LexicalAnalyser::getToken(){
 						break;
 					}
 				}
+				// this token is a NUMBER
 				return Token(NUM, buf);
 			}
 			// read identifier
@@ -155,7 +156,7 @@ Token LexicalAnalyser::getToken(){
 						break;
 					}
 				}
-				return Token(buf);
+				return Token(ID, buf);
 			}
 			// any other characters
 			else {

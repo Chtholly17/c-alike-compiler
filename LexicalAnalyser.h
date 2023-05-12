@@ -23,9 +23,12 @@ private:
 	// output the result to the stream
 	void outputToStream(ostream&out);
 public:
+	// constructor
 	LexicalAnalyser(const char* path);
 	~LexicalAnalyser();
+	// analyse the source file
 	void analyse();
+	// result output
 	void outputToScreen();
 	void outputToFile(const char *fileName);
 	list<Token>&getResult();
