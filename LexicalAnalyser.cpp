@@ -156,7 +156,8 @@ Token LexicalAnalyser::getToken(){
 						break;
 					}
 				}
-				return Token(ID, buf);
+				// might be a keyword or a identifier
+				return Token(buf);
 			}
 			// any other characters
 			else {

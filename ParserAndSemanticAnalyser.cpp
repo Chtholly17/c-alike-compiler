@@ -1,18 +1,4 @@
 #include "ParserAndSemanticAnalyser.h"
-
-list<int>merge(list<int>&l1, list<int>&l2) {
-	list<int>ret;
-	ret.assign(l1.begin(), l1.end());
-	ret.splice(ret.end(), l2);
-	return ret;
-}
-
-bool operator ==(const Symbol&one, const Symbol&other) {
-	return one.content == other.content;
-}
-bool operator <(const Symbol&one, const Symbol&other) {
-	return one.content < other.content;
-}
 bool operator < (const Item&one, const Item& other) {
 	return pair<int, int>(one.pro, one.pointPos) < pair<int, int>(other.pro, other.pointPos);
 }
@@ -20,15 +6,6 @@ bool operator ==(const Item&one, const Item& other) {
 	return one.pro == other.pro&&one.pointPos == other.pointPos;
 }
 
-Symbol::Symbol(const Symbol& sym) {
-	this->content = sym.content;
-	this->isVt = sym.isVt;
-}
-
-Symbol::Symbol(const bool &isVt, const string& content) {
-	this->isVt = isVt;
-	this->content = content;
-}
 
 NewTemper::NewTemper() {
 	now = 0;
@@ -38,58 +15,6 @@ string NewTemper::newTemp() {
 	return string("T") + to_string(now++);
 }
 
-Symbol::Symbol() {}
-
-Id::Id(const Symbol& sym, const string& name) : Symbol(sym) {
-	this->name = name;
-}
-
-Num::Num(const Symbol& sym, const string& number) : Symbol(sym) {
-	this->number = number;
-}
-
-FunctionDeclare::FunctionDeclare(const Symbol& sym) : Symbol(sym) {}
-
-Parameter::Parameter(const Symbol& sym) : Symbol(sym) {}
-
-ParameterList::ParameterList(const Symbol& sym) : Symbol(sym) {}
-
-SentenceBlock::SentenceBlock(const Symbol& sym) : Symbol(sym) {}
-
-SentenceList::SentenceList(const Symbol& sym) : Symbol(sym) {}
-
-Sentence::Sentence(const Symbol& sym) : Symbol(sym) {}
-
-WhileSentence::WhileSentence(const Symbol& sym) : Symbol(sym) {}
-
-IfSentence::IfSentence(const Symbol& sym) : Symbol(sym) {}
-
-Expression::Expression(const Symbol& sym) : Symbol(sym) {}
-
-M::M(const Symbol& sym) : Symbol(sym) {}
-
-N::N(const Symbol& sym) : Symbol(sym) {}
-
-AddExpression::AddExpression(const Symbol& sym) : Symbol(sym) {}
-
-Nomial::Nomial(const Symbol& sym) : Symbol(sym) {}
-
-Factor::Factor(const Symbol& sym) : Symbol(sym) {}
-
-ArgumentList::ArgumentList(const Symbol& sym) : Symbol(sym) {}
-
-bool isVT(string s) {
-	if (s == "int" || s == "void" || s == "if" || s == "while" || s == "else" || s == "return") {
-		return true;
-	}
-	if (s == "+" || s == "-" || s == "*" || s == "/" || s == "=" || s == "==" || s == ">" || s == "<" || s == "!=" || s == ">=" || s == "<=") {
-		return true;
-	}
-	if (s == ";" || s == "," || s == "(" || s == ")" || s == "{" || s == "}" || s == "ID" || s == "NUM") {
-		return true;
-	}
-	return false;
-}
 
 ParserAndSemanticAnalyser::ParserAndSemanticAnalyser(const char*fileName) {
 	readProductions(fileName);
@@ -230,7 +155,7 @@ void ParserAndSemanticAnalyser::outputDFA(ostream& out) {
 	for (list<I>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
 		out << "I" << nowI << "= [";
 		for (set<Item>::iterator itIter = iter->items.begin(); itIter != iter->items.end(); itIter++) {
-			out << "【";
+			out << "[";
 			Production p = productions[itIter->pro];
 			out << p.left.content << " -> ";
 			for (vector<Symbol>::iterator symIter = p.right.begin(); symIter != p.right.end(); symIter++) {
@@ -242,7 +167,7 @@ void ParserAndSemanticAnalyser::outputDFA(ostream& out) {
 			if (p.right.size() == itIter->pointPos) {
 				out << ". ";
 			}
-			out << "】";
+			out << "]";
 		}
 		out << "]" << endl << endl;
 	}
@@ -344,7 +269,7 @@ void ParserAndSemanticAnalyser::createDFA() {
 				set<Symbol>FOLLOW = follow[productions[itIter->pro].left];
 				for (set<Symbol>::iterator followIter = FOLLOW.begin(); followIter != FOLLOW.end(); followIter++) {
 					if (SLR1_Table.count(GOTO(nowI, *followIter)) == 1) {
-						string err = "文法不是SLR1文法，移进规约冲突";
+						string err = "is not SLR(1) grammar, exist conflict in GOTO(";
 						//err += string("GOTO(") + to_string(nowI) + "," + followIter->content + ")=" + to_string(SLR1_Table[GOTO(nowI, *followIter)].nextStat);
 						outputError(err);
 					}
@@ -961,10 +886,10 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
 					Factor* factor = new Factor(reductPro.left);
 					Func* f = lookUpFunc(ID->name);
 					if (!f) {
-						outputError(string("语法错误：第") + to_string(lineCount) + "行，未声明的函数" + ID->name);
+						outputError(string("gramma error, undeclared function")+ ID->name + "in line" + to_string(lineCount));
 					}
 					else if (!march(argument_list->alist, f->paramTypes)) {
-						outputError(string("语法错误：第") + to_string(lineCount) + "行，函数" + ID->name + "参数不匹配");
+						outputError(string("gramma error, inputed parameter do not match with decleration of function") + ID->name + "in line" + to_string(lineCount));
 					}
 					else {
 						for (list<string>::iterator iter = argument_list->alist.begin(); iter != argument_list->alist.end(); iter++) {
@@ -982,7 +907,7 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
 				{
 					Id* ID = (Id*)popSymbol();
 					if (lookUpVar(ID->name) == NULL) {
-						outputError(string("语法错误：第") + to_string(lineCount) + "行，变量" + ID->name + "未声明");
+						outputError(string("gramma error, undeclared variable")+ ID->name + "in line" + to_string(lineCount));
 					}
 					Factor* factor = new Factor(reductPro.left);
 					factor->name = ID->name;
@@ -1032,7 +957,7 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
 		}
 	}
 	if (!acc) {
-		outputError("语法错误：未知的结尾");
+		outputError("gramma error: unexpected end of file");
 	}
 }
 
@@ -1040,7 +965,7 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, const char* fileName)
 	ofstream fout;
 	fout.open(fileName);
 	if (!fout.is_open()) {
-		outputError("文件" + string(fileName) + "打开失败");
+		outputError("fail to open file" + string(fileName));
 	}
 	analyse(words, fout);
 

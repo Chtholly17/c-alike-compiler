@@ -468,10 +468,10 @@ void ObjectCodeGenerator::storeOutLiveVar(set<string>&outl) {
 void ObjectCodeGenerator::generateCodeForQuatenary(int nowBaseBlockIndex, int &arg_num, int &par_num, list<pair<string, bool> > &par_list) {
 	if (nowQuatenary->q.op[0] != 'j'&&nowQuatenary->q.op != "call") {
 		if (isVar(nowQuatenary->q.src1) && Avalue[nowQuatenary->q.src1].empty()) {
-			outputError(string("变量") + nowQuatenary->q.src1 + "在引用前未赋值");
+			outputError(string("variable") + nowQuatenary->q.src1 + "is not initialized before use");
 		}
 		if (isVar(nowQuatenary->q.src2) && Avalue[nowQuatenary->q.src2].empty()) {
-			outputError(string("变量") + nowQuatenary->q.src2 + "在引用前未赋值");
+			outputError(string("variable") + nowQuatenary->q.src2 + "is not initialized before use");
 		}
 	}
 

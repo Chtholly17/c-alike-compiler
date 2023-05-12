@@ -16,20 +16,12 @@ addi $s6 $zero 4
 addi $s5 $zero 2
 sw $s7 8($sp)
 sw $s6 12($sp)
-sw $s5 24($sp)
 sw $sp 16($sp)
 addi $sp $sp 16
-jal demo
 lw $sp 0($sp)
 Label6:
-lw $s7 8($sp)
-sw $s7 24($sp)
-lw $s7 12($sp)
-sw $s7 28($sp)
-sw $v0 32($sp)
 sw $sp 16($sp)
 addi $sp $sp 16
-jal program
 lw $sp 0($sp)
 Label7:
 j end

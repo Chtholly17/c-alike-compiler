@@ -94,6 +94,7 @@ Token::Token(string value): value(value){
 	else if(isalpha(value[0])){
 		type = ID;
 	}
+	// invalid identifier
 	else
 		type = ERROR;
 }

@@ -1,6 +1,6 @@
 #pragma once
-#include "utils.h"
 #include "Token.h"
+#include "utils.h"
 
 /**
  * @brief lexical analyser
