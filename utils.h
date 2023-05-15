@@ -101,5 +101,8 @@ list<int>merge(list<int>&l1, list<int>&l2);
  */
 bool isVT(string s);
 
+// the behavior of a status in LR1 table
+enum tableBehave { reduct, shift, accept, error};
+
 
 #endif // !UTILS_H

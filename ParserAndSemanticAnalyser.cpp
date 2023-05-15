@@ -1,20 +1,4 @@
 #include "ParserAndSemanticAnalyser.h"
-bool operator < (const Item&one, const Item& other) {
-	return pair<int, int>(one.pro, one.pointPos) < pair<int, int>(other.pro, other.pointPos);
-}
-bool operator ==(const Item&one, const Item& other) {
-	return one.pro == other.pro&&one.pointPos == other.pointPos;
-}
-
-
-NewTemper::NewTemper() {
-	now = 0;
-}
-
-string NewTemper::newTemp() {
-	return string("T") + to_string(now++);
-}
-
 
 ParserAndSemanticAnalyser::ParserAndSemanticAnalyser(const char*fileName) {
 	readProductions(fileName);
@@ -152,9 +136,9 @@ void ParserAndSemanticAnalyser::getFollow() {
 
 void ParserAndSemanticAnalyser::outputDFA(ostream& out) {
 	int nowI = 0;
-	for (list<I>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
+	for (list<status>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
 		out << "I" << nowI << "= [";
-		for (set<Item>::iterator itIter = iter->items.begin(); itIter != iter->items.end(); itIter++) {
+		for (set<Item>::iterator itIter = iter->begin(); itIter != iter->end(); itIter++) {
 			out << "[";
 			Production p = productions[itIter->pro];
 			out << p.left.content << " -> ";
@@ -181,7 +165,7 @@ void ParserAndSemanticAnalyser::outputDFA(const char* fileName) {
 	ofstream fout;
 	fout.open(fileName);
 	if (!fout.is_open()) {
-		outputError("文件" + string(fileName) + "打开失败");
+		outputError("fail to open file" + string(fileName));
 	}
 	outputDFA(fout);
 
@@ -194,7 +178,7 @@ void ParserAndSemanticAnalyser::readProductions(const char*fileName) {
 	//文件打开处理
 	fin.open(fileName, ios::in);
 	if (!fin.is_open()) {
-		outputError("文件" + string(fileName) + "打开失败");
+		outputError("fail to open file" + string(fileName));
 	}
 
 	//
@@ -225,29 +209,29 @@ void ParserAndSemanticAnalyser::readProductions(const char*fileName) {
 	}
 }
 
-I ParserAndSemanticAnalyser::derive(Item item) {
-	I i;
+status ParserAndSemanticAnalyser::derive(Item item) {
+	status i;
 	// .在项目产生式的最右边，即是一个规约项目
 	if (productions[item.pro].right.size() == item.pointPos) {
-		i.items.insert(item);
+		i.insert(item);
 	}
 	// .的右边是终结符
 	else if (productions[item.pro].right[item.pointPos].isVt) {
-		i.items.insert(item);
+		i.insert(item);
 	}
 	// .的右边是非终结符
 	else {
-		i.items.insert(item);
+		i.insert(item);
 		vector<Production>::iterator iter;
 		for (iter = productions.begin(); iter < productions.end(); iter++) {
 			//产生式的左部 == .右边的非终结符
 			if (iter->left == productions[item.pro].right[item.pointPos]) {
 				//将产生式的派生加入I中
-				I temp = derive(Item{ int(iter - productions.begin()),0 });
+				status temp = derive(Item{ int(iter - productions.begin()),0 });
 
 				set<Item>::iterator siter;
-				for (siter = temp.items.begin(); siter != temp.items.end(); siter++) {
-					i.items.insert(*siter);
+				for (siter = temp.begin(); siter != temp.end(); siter++) {
+					i.insert(*siter);
 				}
 			}
 		}
@@ -261,9 +245,9 @@ void ParserAndSemanticAnalyser::createDFA() {
 	int nowI = 0;//当前状态的编号
 	dfa.stas.push_back(derive(Item{ 0,0 }));
 	//遍历每一个状态
-	for (list<I>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
+	for (list<status>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
 		//遍历状态的每一个项目
-		for (set<Item>::iterator itIter = iter->items.begin(); itIter != iter->items.end(); itIter++) {
+		for (set<Item>::iterator itIter = iter->begin(); itIter != iter->end(); itIter++) {
 			// .在项目产生式的最右边，即是一个规约项目
 			if (productions[itIter->pro].right.size() == itIter->pointPos) {
 				set<Symbol>FOLLOW = follow[productions[itIter->pro].left];
@@ -290,28 +274,28 @@ void ParserAndSemanticAnalyser::createDFA() {
 				continue;
 			}
 
-			I newI = derive(Item{ itIter->pro,itIter->pointPos + 1 });//新产生的状态
+			status newI = derive(Item{ itIter->pro,itIter->pointPos + 1 });//新产生的状态
 
 			//查找当前状态中其他GOTO[nowI,nextSymbol]
 			//shiftIter指向当前状态项目的下一个项目
 			set<Item>::iterator shiftIter = itIter;
 			shiftIter++;
-			for (; shiftIter != iter->items.end(); shiftIter++) {
+			for (; shiftIter != iter->end(); shiftIter++) {
 				//如果是规约项目
 				if (productions[shiftIter->pro].right.size() == shiftIter->pointPos) {
 					continue;
 				}
 				//如果是移进项目，且移进nextSymbol
 				else if (productions[shiftIter->pro].right[shiftIter->pointPos] == nextSymbol) {
-					I tempI = derive(Item{ shiftIter->pro,shiftIter->pointPos + 1 });
-					newI.items.insert(tempI.items.begin(), tempI.items.end());
+					status tempI = derive(Item{ shiftIter->pro,shiftIter->pointPos + 1 });
+					newI.insert(tempI.begin(), tempI.end());
 				}
 			}
 			//查找已有状态中是否已经包含该状态
 			bool searchFlag = false;
 			int index = 0;//当前状态的编号
-			for (list<I>::iterator iterHave = dfa.stas.begin(); iterHave != dfa.stas.end(); iterHave++, index++) {
-				if (iterHave->items == newI.items) {
+			for (list<status>::iterator iterHave = dfa.stas.begin(); iterHave != dfa.stas.end(); iterHave++, index++) {
+				if (*iterHave == newI) {
 					dfa.goTo[GOTO(nowI, nextSymbol)] = index;
 					if (SLR1_Table.count(GOTO(nowI, nextSymbol)) == 1) {
 						outputError("confict");

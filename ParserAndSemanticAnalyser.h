@@ -2,51 +2,10 @@
 #include "utils.h"
 #include "Symbol.h"
 #include "Token.h"
+#include "table.h"
 #include "IntermediateCode.h"
 #ifndef PARSER_H
 #define PARSER_H
-
-
-//产生式
-struct Production {
-	int id;//产生式的标识id，方便比较
-	Symbol left;
-	vector<Symbol>right;
-};
-
-//项目
-struct Item {
-	int pro;//产生式id
-	int pointPos;//.的位置
-	friend bool operator ==(const Item&one, const Item& other);
-	friend bool operator <(const Item&one, const Item& other);
-};
-
-//DFA状态
-struct I {
-	set<Item> items;
-};
-
-typedef pair<int, Symbol> GOTO;
-
-struct DFA {
-	list<I> stas;
-	map<GOTO, int> goTo;
-};
-
-enum Behave { reduct, shift, accept, error};
-struct Behavior {
-	Behave behavior;
-	int nextStat;
-};
-
-class NewTemper {
-private:
-	int now;
-public:
-	NewTemper();
-	string newTemp();
-};
 
 class ParserAndSemanticAnalyser {
 private:
@@ -65,7 +24,7 @@ private:
 	NewTemper nt;
 
 	void readProductions(const char*fileName);
-	I derive(Item item);
+	status derive(Item item);
 	void createDFA(); 
 	void outputDFA(ostream& out);
 	void analyse(list<Token>&words,ostream& out);

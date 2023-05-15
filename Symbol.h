@@ -27,6 +27,13 @@ const Symbol symbol[] = {
 	{false,"ID"}
 };
 
+//production
+struct Production {
+	int id;				// production id
+	Symbol left;		// left symbol
+	vector<Symbol>right;// right symbols
+};
+
 
 class Id :public Symbol {
 public:
