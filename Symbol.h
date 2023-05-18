@@ -10,8 +10,8 @@
  */
 class Symbol {
 public:
-	bool isVt;//是否为终结符
-	string content;//内容
+	bool isVt; 		//true for terminal symbol, false for non-terminal symbol
+	string content;	//the content of the symbol
 	friend bool operator ==(const Symbol&one, const Symbol&other);
 	friend bool operator < (const Symbol&one, const Symbol&other);
 	Symbol(const Symbol& sym);

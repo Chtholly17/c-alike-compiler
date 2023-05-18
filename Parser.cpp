@@ -1,329 +1,14 @@
-#include "ParserAndSemanticAnalyser.h"
+﻿#include "Parser.h"
 
-ParserAndSemanticAnalyser::ParserAndSemanticAnalyser(const char*fileName) {
-	readProductions(fileName);
-	getFirst();
-	getFollow();
-	createDFA();
-	lineCount = 1;
+Parser::Parser(const char*fileName,AnalyseTable* table) {
+	this->analyseTable = table;
+	this->lineCount = 1;
+	this->nowLevel = 0;
 }
 
-void ParserAndSemanticAnalyser::getFirst() {
-	bool changeFlag = true;
-	while (changeFlag) {
-		changeFlag = false;//first集改变标志
-		//遍历每一个产生式
-		for (vector<Production>::iterator iter = productions.begin(); iter != productions.end(); iter++) {
-			vector<Symbol>::iterator symIter;
-			//依次遍历产生式右部的所有符号
-			for (symIter = iter->right.begin(); symIter != iter->right.end(); symIter++) {
-				//这个右部符号是终结符
-				if (symIter->isVt) {
-					if (first.count(iter->left) == 0) {
-						first[iter->left] = set<Symbol>();
-					}
-					//左部符号的first集不包含该右部符号
-					if (first[iter->left].insert(*symIter).second == true) {
-						changeFlag = true;
-					}
-					break;
-				}
-				//当前右部符号是非终结符
-				else {
-					bool continueFlag = false;//是否继续读取下一个右部符号的first集
-					set<Symbol>::iterator firstIter;
-					//遍历该右部符号的first集
-					for (firstIter = first[*symIter].begin(); firstIter != first[*symIter].end(); firstIter++) {
-						//右部符号的first集中的元素包含EMPTY
-						if (firstIter->content == "EMPTY") {
-							continueFlag = true;
-						}
-						//右部符号的first集中的元素不在左部符号first集中
-						else if (first[iter->left].find(*firstIter) == first[iter->left].end()) {
-							if (first.count(iter->left) == 0) {
-								first[iter->left] = set<Symbol>();
-							}
-							first[iter->left].insert(*firstIter);
-							changeFlag = true;
-						}
-					}
-					if (!continueFlag) {
-						break;
-					}
-				}
-			}
-			//遍历右部符号到了末尾,则EMPTY在其first集中
-			if (symIter == iter->right.end()) {
-				if (first.count(iter->left) == 0) {
-					first[iter->left] = set<Symbol>();
-				}
-				if (first[iter->left].insert(Symbol{ true,"EMPTY" }).second == true) {
-					changeFlag = true;
-				}
-			}
-		}
 
-	}
-}
 
-void ParserAndSemanticAnalyser::getFollow() {
-	//将#放入起始符号的FOLLOW集中
-	follow[productions[0].left] = set<Symbol>();
-	follow[productions[0].left].insert(Symbol{ true,"#" });
-	bool changeFlag = true;
-	while (changeFlag) {
-		changeFlag = false;
-		//遍历每一个产生式
-		for (vector<Production>::iterator proIter = productions.begin(); proIter != productions.end(); proIter++) {
-			//遍历产生式右部的每个符号
-			for (vector<Symbol>::iterator symIter = proIter->right.begin(); symIter != proIter->right.end(); symIter++) {
-				//遍历产生式右部该符号之后的符号
-				vector<Symbol>::iterator nextSymIter;
-				for (nextSymIter = symIter + 1; nextSymIter != proIter->right.end(); nextSymIter++) {
-					Symbol nextSym = *nextSymIter;
-					bool nextFlag = false;
-					//如果之后的符号是终结符
-					if (nextSym.isVt) {
-						if (follow.count(*symIter) == 0) {
-							follow[*symIter] = set<Symbol>();
-						}
-						//如果成功插入新值
-						if (follow[*symIter].insert(nextSym).second == true) {
-							changeFlag = true;
-						}
-					}
-					else {
-						//遍历之后符号的first集
-						for (set<Symbol>::iterator fIter = first[nextSym].begin(); fIter != first[nextSym].end(); fIter++) {
-							//如果当前符号first集中有 空串
-							if (fIter->content == "EMPTY") {
-								nextFlag = true;
-							}
-							else {
-								if (follow.count(*symIter) == 0) {
-									follow[*symIter] = set<Symbol>();
-								}
-								//如果成功插入新值
-								if (follow[*symIter].insert(*fIter).second == true) {
-									changeFlag = true;
-								}
-							}
-						}
-					}
-					//如果当前符号first集中没有 空串
-					if (!nextFlag) {
-						break;
-					}
-
-				}
-				//如果遍历到了结尾,将左部符号的FOLLOW集加入其FOLLOW集中
-				if (nextSymIter == proIter->right.end()) {
-					//遍历左部符号的FOLLOW集
-					for (set<Symbol>::iterator followIter = follow[proIter->left].begin(); followIter != follow[proIter->left].end(); followIter++) {
-						if (follow.count(*symIter) == 0) {
-							follow[*symIter] = set<Symbol>();
-						}
-						//如果该FOLLOW集是新值
-						if (follow[*symIter].insert(*followIter).second == true) {
-							changeFlag = true;
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-void ParserAndSemanticAnalyser::outputDFA(ostream& out) {
-	int nowI = 0;
-	for (list<status>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
-		out << "I" << nowI << "= [";
-		for (set<Item>::iterator itIter = iter->begin(); itIter != iter->end(); itIter++) {
-			out << "[";
-			Production p = productions[itIter->pro];
-			out << p.left.content << " -> ";
-			for (vector<Symbol>::iterator symIter = p.right.begin(); symIter != p.right.end(); symIter++) {
-				if (symIter - p.right.begin() == itIter->pointPos) {
-					out << ". ";
-				}
-				out << symIter->content << " ";
-			}
-			if (p.right.size() == itIter->pointPos) {
-				out << ". ";
-			}
-			out << "]";
-		}
-		out << "]" << endl << endl;
-	}
-}
-
-void ParserAndSemanticAnalyser::outputDFA() {
-	outputDFA(cout);
-}
-
-void ParserAndSemanticAnalyser::outputDFA(const char* fileName) {
-	ofstream fout;
-	fout.open(fileName);
-	if (!fout.is_open()) {
-		outputError("fail to open file" + string(fileName));
-	}
-	outputDFA(fout);
-
-	fout.close();
-}
-
-void ParserAndSemanticAnalyser::readProductions(const char*fileName) {
-	ifstream fin;
-
-	//文件打开处理
-	fin.open(fileName, ios::in);
-	if (!fin.is_open()) {
-		outputError("fail to open file" + string(fileName));
-	}
-
-	//
-	int index = 0;//产生式序号
-	char buf[1024];
-	while (fin >> buf) {
-		Production p;
-		//产生式序号赋值
-		p.id = index++;
-
-		//产生式左部赋值
-		p.left = Symbol{ false,string(buf) };
-
-		//中间应为::=
-		fin >> buf;
-		assert(strcmp(buf, "::=") == 0);
-
-		//产生式右部赋值
-		fin.getline(buf, 1024);
-		stringstream sstream(buf);
-		string temp;
-		while (sstream >> temp) {
-			p.right.push_back(Symbol{ isVT(temp),string(temp) });
-		}
-
-		//插入产生式
-		productions.push_back(p);
-	}
-}
-
-status ParserAndSemanticAnalyser::derive(Item item) {
-	status i;
-	// .在项目产生式的最右边，即是一个规约项目
-	if (productions[item.pro].right.size() == item.pointPos) {
-		i.insert(item);
-	}
-	// .的右边是终结符
-	else if (productions[item.pro].right[item.pointPos].isVt) {
-		i.insert(item);
-	}
-	// .的右边是非终结符
-	else {
-		i.insert(item);
-		vector<Production>::iterator iter;
-		for (iter = productions.begin(); iter < productions.end(); iter++) {
-			//产生式的左部 == .右边的非终结符
-			if (iter->left == productions[item.pro].right[item.pointPos]) {
-				//将产生式的派生加入I中
-				status temp = derive(Item{ int(iter - productions.begin()),0 });
-
-				set<Item>::iterator siter;
-				for (siter = temp.begin(); siter != temp.end(); siter++) {
-					i.insert(*siter);
-				}
-			}
-		}
-	}
-
-	return i;
-}
-
-void ParserAndSemanticAnalyser::createDFA() {
-	bool newFlag = true;//有新的状态产生标志
-	int nowI = 0;//当前状态的编号
-	dfa.stas.push_back(derive(Item{ 0,0 }));
-	//遍历每一个状态
-	for (list<status>::iterator iter = dfa.stas.begin(); iter != dfa.stas.end(); iter++, nowI++) {
-		//遍历状态的每一个项目
-		for (set<Item>::iterator itIter = iter->begin(); itIter != iter->end(); itIter++) {
-			// .在项目产生式的最右边，即是一个规约项目
-			if (productions[itIter->pro].right.size() == itIter->pointPos) {
-				set<Symbol>FOLLOW = follow[productions[itIter->pro].left];
-				for (set<Symbol>::iterator followIter = FOLLOW.begin(); followIter != FOLLOW.end(); followIter++) {
-					if (SLR1_Table.count(GOTO(nowI, *followIter)) == 1) {
-						string err = "is not SLR(1) grammar, exist conflict in GOTO(";
-						//err += string("GOTO(") + to_string(nowI) + "," + followIter->content + ")=" + to_string(SLR1_Table[GOTO(nowI, *followIter)].nextStat);
-						outputError(err);
-					}
-					if (itIter->pro == 0) {
-						SLR1_Table[GOTO(nowI, *followIter)] = Behavior{ accept,itIter->pro };
-					}
-					else {
-						SLR1_Table[GOTO(nowI, *followIter)] = Behavior{ reduct,itIter->pro };
-					}
-
-				}
-				continue;
-			}
-			Symbol nextSymbol = productions[itIter->pro].right[itIter->pointPos];//.之后的符号
-
-			//DFA中GOTO(nowI,nextSymbol)已经存在
-			if (dfa.goTo.count(GOTO(nowI, nextSymbol)) == 1) {
-				continue;
-			}
-
-			status newI = derive(Item{ itIter->pro,itIter->pointPos + 1 });//新产生的状态
-
-			//查找当前状态中其他GOTO[nowI,nextSymbol]
-			//shiftIter指向当前状态项目的下一个项目
-			set<Item>::iterator shiftIter = itIter;
-			shiftIter++;
-			for (; shiftIter != iter->end(); shiftIter++) {
-				//如果是规约项目
-				if (productions[shiftIter->pro].right.size() == shiftIter->pointPos) {
-					continue;
-				}
-				//如果是移进项目，且移进nextSymbol
-				else if (productions[shiftIter->pro].right[shiftIter->pointPos] == nextSymbol) {
-					status tempI = derive(Item{ shiftIter->pro,shiftIter->pointPos + 1 });
-					newI.insert(tempI.begin(), tempI.end());
-				}
-			}
-			//查找已有状态中是否已经包含该状态
-			bool searchFlag = false;
-			int index = 0;//当前状态的编号
-			for (list<status>::iterator iterHave = dfa.stas.begin(); iterHave != dfa.stas.end(); iterHave++, index++) {
-				if (*iterHave == newI) {
-					dfa.goTo[GOTO(nowI, nextSymbol)] = index;
-					if (SLR1_Table.count(GOTO(nowI, nextSymbol)) == 1) {
-						outputError("confict");
-					}
-					SLR1_Table[GOTO(nowI, nextSymbol)] = Behavior{ shift,index };
-					searchFlag = true;
-					break;
-				}
-			}
-
-			//没有在已有状态中找到该状态
-			if (!searchFlag) {
-				dfa.stas.push_back(newI);
-				dfa.goTo[GOTO(nowI, nextSymbol)] = dfa.stas.size() - 1;
-				if (SLR1_Table.count(GOTO(nowI, nextSymbol)) == 1) {
-					outputError("confict");
-				}
-				SLR1_Table[GOTO(nowI, nextSymbol)] = Behavior{ shift,int(dfa.stas.size() - 1) };
-			}
-			else {
-				continue;
-			}
-
-		}
-	}
-}
-
-Func* ParserAndSemanticAnalyser::lookUpFunc(string ID) {
+Func* Parser::lookUpFunc(string ID) {
 	for (vector<Func>::iterator iter = funcTable.begin(); iter != funcTable.end(); iter++) {
 		if (iter->name == ID) {
 			return &(*iter);
@@ -332,7 +17,7 @@ Func* ParserAndSemanticAnalyser::lookUpFunc(string ID) {
 	return NULL;
 }
 
-Var* ParserAndSemanticAnalyser::lookUpVar(string ID) {
+Var* Parser::lookUpVar(string ID) {
 	for (vector<Var>::reverse_iterator iter = varTable.rbegin(); iter != varTable.rend(); iter++) {
 		if (iter->name == ID) {
 			return &(*iter);
@@ -341,7 +26,7 @@ Var* ParserAndSemanticAnalyser::lookUpVar(string ID) {
 	return NULL;
 }
 
-bool ParserAndSemanticAnalyser::march(list<string>&argument_list, list<DType>&parameter_list) {
+bool Parser::march(list<string>&argument_list, list<DType>&parameter_list) {
 	if (argument_list.size() != parameter_list.size()) {
 		return false;
 	}
@@ -350,7 +35,7 @@ bool ParserAndSemanticAnalyser::march(list<string>&argument_list, list<DType>&pa
 	}
 }
 
-void ParserAndSemanticAnalyser::outputSymbolStack(ostream& out) {
+void Parser::outputSymbolStack(ostream& out) {
 	stack<Symbol*>temp = symStack;
 	stack<Symbol*>other;
 	while (!temp.empty()) {
@@ -364,7 +49,7 @@ void ParserAndSemanticAnalyser::outputSymbolStack(ostream& out) {
 	out << endl;
 }
 
-void ParserAndSemanticAnalyser::outputStateStack(ostream& out) {
+void Parser::outputStateStack(ostream& out) {
 	stack<int>temp = staStack;
 	stack<int>other;
 	while (!temp.empty()) {
@@ -379,31 +64,31 @@ void ParserAndSemanticAnalyser::outputStateStack(ostream& out) {
 
 }
 
-void ParserAndSemanticAnalyser::outputIntermediateCode() {
+void Parser::outputIntermediateCode() {
 	code.output();
 }
 
-void ParserAndSemanticAnalyser::outputIntermediateCode(const char* fileName) {
+void Parser::outputIntermediateCode(const char* fileName) {
 	code.output(fileName);
 }
 
-Symbol* ParserAndSemanticAnalyser::popSymbol() {
+Symbol* Parser::popSymbol() {
 	Symbol* ret = symStack.top();
 	symStack.pop();
 	staStack.pop();
 	return ret;
 }
 
-void ParserAndSemanticAnalyser::pushSymbol(Symbol* sym) {
+void Parser::pushSymbol(Symbol* sym) {
 	symStack.push(sym);
-	if (SLR1_Table.count(GOTO(staStack.top(), *sym)) == 0) {
+	if (analyseTable->LR1_Table.count(GOTO(staStack.top(), *sym)) == 0) {
 		outputError(string("语法错误：第") + to_string(lineCount) + "行，不期待的符号" + sym->content);
 	}
-	Behavior bh = SLR1_Table[GOTO(staStack.top(), *sym)];
+	Behavior bh = analyseTable->LR1_Table[GOTO(staStack.top(), *sym)];
 	staStack.push(bh.nextStat);
 }
 
-void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
+void Parser::analyse(list<Token>&words, ostream& out) {
 	bool acc = false;
 	symStack.push(new Symbol(true, "#"));
 	staStack.push(0);
@@ -432,18 +117,18 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
 		else {
 			nextSymbol = new Symbol(true, word);
 		}
-		if (SLR1_Table.count(GOTO(staStack.top(), *nextSymbol)) == 0) {
+		if (analyseTable->LR1_Table.count(GOTO(staStack.top(), *nextSymbol)) == 0) {
 			outputError(string("语法错误：第")+to_string(lineCount)+"行，不期待的符号"+nextSymbol->content);
 		}
 
-		Behavior bh = SLR1_Table[GOTO(staStack.top(), *nextSymbol)];
+		Behavior bh = analyseTable->LR1_Table[GOTO(staStack.top(), *nextSymbol)];
 		if (bh.behavior == shift) {
 			symStack.push(nextSymbol);
 			staStack.push(bh.nextStat);
 			iter++;
 		}
 		else if (bh.behavior == reduct) {
-			Production reductPro = productions[bh.nextStat];
+			Production reductPro = analyseTable->productions[bh.nextStat];
 			int popSymNum = reductPro.right.size();
 			switch (bh.nextStat) {
 				case 3://declare ::= int ID M A function_declare
@@ -945,7 +630,7 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, ostream& out) {
 	}
 }
 
-void ParserAndSemanticAnalyser::analyse(list<Token>&words, const char* fileName) {
+void Parser::analyse(list<Token>&words, const char* fileName) {
 	ofstream fout;
 	fout.open(fileName);
 	if (!fout.is_open()) {
@@ -956,11 +641,11 @@ void ParserAndSemanticAnalyser::analyse(list<Token>&words, const char* fileName)
 	fout.close();
 }
 
-void ParserAndSemanticAnalyser::analyse(list<Token>&words) {
+void Parser::analyse(list<Token>&words) {
 	analyse(words, cout);
 }
 
-vector<pair<int, string> >ParserAndSemanticAnalyser::getFuncEnter() {
+vector<pair<int, string> >Parser::getFuncEnter() {
 	vector<pair<int, string> >ret;
 	for (vector<Func>::iterator iter = funcTable.begin(); iter != funcTable.end(); iter++) {
 		ret.push_back(pair<int, string>(iter->enterPoint, iter->name));
@@ -969,6 +654,6 @@ vector<pair<int, string> >ParserAndSemanticAnalyser::getFuncEnter() {
 	return ret;
 }
 
-IntermediateCode* ParserAndSemanticAnalyser::getIntermediateCode() {
+IntermediateCode* Parser::getIntermediateCode() {
 	return &code;
 }

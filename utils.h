@@ -15,6 +15,8 @@
 #include <cstdlib>
 #include <cassert>
 #include <functional>
+#include <algorithm>
+#include <string.h>
 
 using namespace std;
 
@@ -103,6 +105,14 @@ bool isVT(string s);
 
 // the behavior of a status in LR1 table
 enum tableBehave { reduct, shift, accept, error};
+
+class NewTemper {
+private:
+	int now;
+public:
+	NewTemper();
+	string newTemp();
+};
 
 
 #endif // !UTILS_H

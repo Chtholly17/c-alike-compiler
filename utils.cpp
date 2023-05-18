@@ -24,3 +24,11 @@ bool isVT(string s) {
 	}
 	return false;
 }
+
+NewTemper::NewTemper() {
+	now = 0;
+}
+
+string NewTemper::newTemp() {
+	return string("T") + to_string(now++);
+}

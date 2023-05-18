@@ -1,11 +1,12 @@
 #include "LexicalAnalyser.h"
-#include "ParserAndSemanticAnalyser.h"
+#include "Parser.h"
 #include "ObjectCodeGenerator.h"
 int main() {
 	LexicalAnalyser lexicalAnalyser("test.txt");
 	lexicalAnalyser.analyse();
 	
-	ParserAndSemanticAnalyser parserAndSemanticAnalyser("productions.txt");
+	AnalyseTable analyseTable("productions.txt");
+	Parser parserAndSemanticAnalyser("productions.txt", &analyseTable);
 	//parserAndSemanticAnalyser.outputDFA("DFA.txt");
 	parserAndSemanticAnalyser.analyse(lexicalAnalyser.getResult(), "SLR1_analyse.txt");
 	//parserAndSemanticAnalyser.outputIntermediateCode();

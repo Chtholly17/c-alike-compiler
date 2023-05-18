@@ -2,6 +2,12 @@
 #define TABLE_H
 #include "Symbol.h"
 
+/**
+ * @file table.h
+ * @brief structs related to LR1 table, including DFA, status, transfer and so on
+ * @author chtholly
+ */
+
 //a lr(1) item
 struct Item {
 	int pro;					// production id
@@ -10,7 +16,7 @@ struct Item {
 	friend bool operator <(const Item&one, const Item& other);
 };
 
-//a status in DFA
+//a status in DFA, a status is a set of lr(1) items
 typedef set<Item> status;
 
 //a transfer in DFA
@@ -30,12 +36,29 @@ struct Behavior {
 	int nextStat;
 };
 
-class NewTemper {
+
+/**
+ * @brief analyse table class, including DFA, LR1 table, first set and follow set, construct from product.txt
+ * @author chtholly
+ */
+class AnalyseTable {
 private:
-	int now;
+	vector<Production>productions;		// all productions of this grammar
+	DFA dfa;							// construct DFA from product.txt
+	map<GOTO,Behavior> LR1_Table;		// construct LR1 table from product.txt
+	map<Symbol,set<Symbol> >first;		// construct first set from product.txt
+	map<Symbol, set<Symbol> >follow;	// construct follow set from product.txt
+
+	status derive(Item item);
+	void readProductions(const char*fileName);
+	void getFirst();
+	void getFollow();
+	void createDFA(); 
 public:
-	NewTemper();
-	string newTemp();
+	friend class Parser;
+	AnalyseTable(const char*fileName);
+	void outputDFA(ostream& out);
+	void outputDFA(const char* fileName);
 };
 
 #endif // !TABLE_H
