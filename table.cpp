@@ -26,7 +26,7 @@ bool operator ==(const Item&one, const Item& other) {
 
 /**
  * @brief read productions from file
- * @param fileName 
+ * @param fileName the name of the production
  */
 void AnalyseTable::readProductions(const char*fileName) {
 	// open file

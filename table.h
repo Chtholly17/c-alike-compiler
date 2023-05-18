@@ -57,6 +57,7 @@ private:
 public:
 	friend class Parser;
 	AnalyseTable(const char*fileName);
+	// output functions
 	void outputDFA(ostream& out);
 	void outputDFA(const char* fileName);
 };

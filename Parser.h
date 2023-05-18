@@ -24,21 +24,17 @@ private:
 	IntermediateCode code;				// intermediate code
 	NewTemper nt;						// new temper generator
 
-	
-	void analyse(list<Token>&words,ostream& out);
-	void outputSymbolStack(ostream& out);
-	void outputStateStack(ostream& out);
 	Func* lookUpFunc(string ID);
 	Var* lookUpVar(string ID);
 	bool march(list<string>&argument_list,list<DType>&parameter_list);
 	Symbol* popSymbol();
 	void pushSymbol(Symbol* sym);
+	void outputStateStack(ostream& out);
+	void outputSymbolStack(ostream& out);
 public:
-	Parser(const char*fileName,AnalyseTable* table);
-	void outputIntermediateCode();
-	void outputIntermediateCode(const char* fileName);
-	void analyse(list<Token>&words,const char*fileName);
-	void analyse(list<Token>&words);
+	Parser(AnalyseTable* table);
+	void analyse(list<Token>&tokens, ostream& out);
+	void analyse(list<Token>&tokens, const char* fileName);
 	vector<pair<int, string> > getFuncEnter();
 	IntermediateCode* getIntermediateCode();
 };

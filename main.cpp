@@ -6,9 +6,9 @@ int main() {
 	lexicalAnalyser.analyse();
 	
 	AnalyseTable analyseTable("productions.txt");
-	Parser parserAndSemanticAnalyser("productions.txt", &analyseTable);
+	Parser parserAndSemanticAnalyser(&analyseTable);
 	//parserAndSemanticAnalyser.outputDFA("DFA.txt");
-	parserAndSemanticAnalyser.analyse(lexicalAnalyser.getResult(), "SLR1_analyse.txt");
+	parserAndSemanticAnalyser.analyse(lexicalAnalyser.getResult(), "LR1_analyse.txt");
 	//parserAndSemanticAnalyser.outputIntermediateCode();
 	
 	IntermediateCode* code = parserAndSemanticAnalyser.getIntermediateCode();
