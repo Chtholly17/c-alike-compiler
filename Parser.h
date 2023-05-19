@@ -8,6 +8,25 @@
 #define PARSER_H
 
 /**
+ * @brief the type of variable
+ */
+struct Var {
+	string name;				// variable name
+	DType type;					// variable type
+	int level;					// variable level	
+};
+
+/**
+ * @brief the type of function
+ */
+struct Func {
+	string name;				// function name
+	DType returnType;			// function return type
+	list<DType> paramTypes;		// function parameter type
+	int enterPoint;				// function enter point
+};
+
+/**
  * @brief the parser class, which is used to parse the source code and run semantic analysis
  * @author chtholly
  */
@@ -22,7 +41,6 @@ private:
 	vector<Var> varTable;				// variable table
 	vector<Func> funcTable;				// function table
 	IntermediateCode code;				// intermediate code
-	NewTemper nt;						// new temper generator
 
 	Func* lookUpFunc(string ID);
 	Var* lookUpVar(string ID);

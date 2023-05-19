@@ -3,6 +3,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
+
 /**
  * @brief basic symbol class, including terminal and non-terminal symbols
  * @author chtholly
@@ -19,13 +20,22 @@ public:
 	Symbol();
 };
 
-const Symbol symbol[] = { 
-	{true,"int"},{true,"void"},{true,"if"},{true,"else"},{true,"while"},{true,"return"},
-	{true,"+"},{true,"-"},{true,"*"},{true,"/"},{true,"="},
-	{true,"=="},{true,">"},{true,"<"},{true,"!="},{true,">="},{true,"<="},
-	{true,";"},{true,","},{true,"("},{true,")"},{true,"{"},{true,"}"},{true,"ID"},
-	{false,"ID"}
-};
+/**
+ * @brief if the string is end symbol
+ * 
+ * @param s 
+ * @return true 
+ * @return false 
+ */
+bool isVT(string s);
+
+// const Symbol symbol[] = { 
+// 	{true,"int"},{true,"void"},{true,"if"},{true,"else"},{true,"while"},{true,"return"},
+// 	{true,"+"},{true,"-"},{true,"*"},{true,"/"},{true,"="},
+// 	{true,"=="},{true,">"},{true,"<"},{true,"!="},{true,">="},{true,"<="},
+// 	{true,";"},{true,","},{true,"("},{true,")"},{true,"{"},{true,"}"},{true,"ID"},
+// 	{false,"ID"}
+// };
 
 //production
 struct Production {
@@ -34,7 +44,7 @@ struct Production {
 	vector<Symbol>right;// right symbols
 };
 
-
+// a series of special symbols
 class Id :public Symbol {
 public:
 	string name;

@@ -1,4 +1,4 @@
-#include "ObjectCodeGenerator.h"
+﻿#include "ObjectCodeGenerator.h"
 
 bool isVar(string name) {
 	return isalpha(name[0]);

@@ -16,14 +16,22 @@ addi $s6 $zero 4
 addi $s5 $zero 2
 sw $s7 8($sp)
 sw $s6 12($sp)
+sw $s5 24($sp)
 sw $sp 16($sp)
 addi $sp $sp 16
+jal demo
+lw $sp 0($sp)
+Label5:
+lw $s7 8($sp)
+sw $s7 24($sp)
+lw $s7 12($sp)
+sw $s7 28($sp)
+sw $v0 32($sp)
+sw $sp 16($sp)
+addi $sp $sp 16
+jal program
 lw $sp 0($sp)
 Label6:
-sw $sp 16($sp)
-addi $sp $sp 16
-lw $sp 0($sp)
-Label7:
 j end
 program:
 sw $ra 4($sp)
@@ -33,8 +41,8 @@ lw $s5 16($sp)
 add $s4 $s6 $s5
 sw $s7 20($sp)
 lw $s3 8($sp)
-ble $s3 $s4 Label2
-Label1:
+ble $s3 $s4 Label1
+Label0:
 lw $s7 12($sp)
 lw $s6 16($sp)
 mul $s7 $s7 $s6
@@ -43,22 +51,22 @@ add $s7 $s7 $s6
 lw $s5 8($sp)
 add $s5 $s5 $s7
 sw $s5 24($sp)
-j Label3
-Label2:
+j Label2
+Label1:
 lw $s7 8($sp)
 sw $s7 24($sp)
-Label3:
+Label2:
 lw $s7 20($sp)
 addi $s6 $zero 100
-bgt $s7 $s6 Label5
-Label4:
+bgt $s7 $s6 Label4
+Label3:
 lw $s7 24($sp)
 addi $s6 $zero 2
 mul $s7 $s7 $s6
 sw $s7 20($sp)
 sw $s7 24($sp)
-j Label3
-Label5:
+j Label2
+Label4:
 lw $v0 20($sp)
 lw $ra 4($sp)
 jr $ra

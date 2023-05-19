@@ -1,11 +1,73 @@
 #include "IntermediateCode.h"
 
-NewLabeler::NewLabeler() {
-	index = 1;
+/**
+ * @brief Construct a new Intermediate Code:: Intermediate Code object
+ */
+IntermediateCode::IntermediateCode() {
+	tempIndex = 0;
+	labelIndex = 0;
 }
 
-string NewLabeler::newLabel () {
-	return string("Label") + to_string(index++);
+/**
+ * @brief Generate a new label
+ * @return string 
+ */
+string IntermediateCode::newLabel() {
+	return string("Label") + to_string(labelIndex++);
+}
+
+/**
+ * @brief Generate a new temporary variable
+ * @return string 
+ */
+string IntermediateCode::newTemp() {
+	return string("T") + to_string(tempIndex++);
+}
+
+/**
+ * @brief Get the next quad object
+ * @return int 
+ */
+int IntermediateCode::nextQuad() {
+	return code.size();
+}
+
+/**
+ * @brief Get the function blocks object
+ * @return map<string, vector<Block> >* 
+ */
+map<string, vector<Block> >* IntermediateCode::getFuncBlock() {
+	return &funcBlocks;
+}
+
+/**
+ * @brief Generate a new quaternary
+ * @param q 
+ */
+void IntermediateCode::emit(Quaternary q) {
+	code.push_back(q);
+}
+
+/**
+ * @brief Generate a new quaternary
+ * @param op 
+ * @param src1 
+ * @param src2 
+ * @param des 
+ */
+void IntermediateCode::emit(string op, string src1, string src2, string des) {
+	emit(Quaternary{ op,src1,src2,des });
+}
+
+/**
+ * @brief Back patch
+ * @param nextList 
+ * @param quad 
+ */
+void IntermediateCode::back_patch(list<int>nextList, int quad) {
+	for (list<int>::iterator iter = nextList.begin(); iter != nextList.end(); iter++) {
+		code[*iter].des = to_string(quad);
+	}
 }
 
 void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
@@ -56,7 +118,7 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 			}
 
 			if (!firstFlag) {//该基本块不是函数块的第一块基本块
-				block.name = nl.newLabel();
+				block.name = newLabel();
 				labelEnter[lastEnter] = block.name;
 			}
 			else {//该基本块是函数块的第一块基本块
@@ -69,7 +131,7 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 			block.codes.clear();
 		}
 		if (!firstFlag) {//该基本块不是函数块的第一块基本块
-			block.name = nl.newLabel();
+			block.name = newLabel();
 			labelEnter[lastEnter] = block.name;
 		}
 		else {//该基本块是函数块的第一块基本块
@@ -119,18 +181,6 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 	}
 }
 
-void IntermediateCode::output(ostream& out) {
-	int i = 0;
-	for (vector<Quaternary>::iterator iter = code.begin(); iter != code.end(); iter++, i++) {
-		out << setw(4) << i;
-		out << "( " << iter->op << " , ";
-		out << iter->src1 << " , ";
-		out << iter->src2 << " , ";
-		out << iter->des << " )";
-		out << endl;
-	}
-}
-
 void IntermediateCode::outputBlocks(ostream& out) {
 	for (map<string, vector<Block> >::iterator iter = funcBlocks.begin(); iter != funcBlocks.end(); iter++) {
 		out << "[" << iter->first << "]" << endl;
@@ -144,36 +194,6 @@ void IntermediateCode::outputBlocks(ostream& out) {
 		}
 		cout << endl;
 	}
-}
-
-void IntermediateCode::emit(Quaternary q) {
-	code.push_back(q);
-}
-
-void IntermediateCode::emit(string op, string src1, string src2, string des) {
-	emit(Quaternary{ op,src1,src2,des });
-}
-
-void IntermediateCode::back_patch(list<int>nextList, int quad) {
-	for (list<int>::iterator iter = nextList.begin(); iter != nextList.end(); iter++) {
-		code[*iter].des = to_string(quad);
-	}
-}
-
-void IntermediateCode::output() {
-	output(cout);
-}
-
-void IntermediateCode::output(const char* fileName) {
-	ofstream fout;
-	fout.open(fileName);
-	if (!fout.is_open()) {
-		cerr << "file " << fileName << " open error" << endl;
-		return;
-	}
-	output(fout);
-
-	fout.close();
 }
 
 void IntermediateCode::outputBlocks() {
@@ -192,10 +212,31 @@ void IntermediateCode::outputBlocks(const char* fileName) {
 	fout.close();
 }
 
-int IntermediateCode::nextQuad() {
-	return code.size();
+
+void IntermediateCode::output(ostream& out) {
+	int i = 0;
+	for (vector<Quaternary>::iterator iter = code.begin(); iter != code.end(); iter++, i++) {
+		out << setw(4) << i;
+		out << "( " << iter->op << " , ";
+		out << iter->src1 << " , ";
+		out << iter->src2 << " , ";
+		out << iter->des << " )";
+		out << endl;
+	}
 }
 
-map<string, vector<Block> >* IntermediateCode::getFuncBlock() {
-	return &funcBlocks;
+void IntermediateCode::output() {
+	output(cout);
+}
+
+void IntermediateCode::output(const char* fileName) {
+	ofstream fout;
+	fout.open(fileName);
+	if (!fout.is_open()) {
+		cerr << "file " << fileName << " open error" << endl;
+		return;
+	}
+	output(fout);
+
+	fout.close();
 }

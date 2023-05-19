@@ -8,6 +8,19 @@ bool operator <(const Symbol&one, const Symbol&other) {
 	return one.content < other.content;
 }
 
+bool isVT(string s) {
+	if (s == "int" || s == "void" || s == "if" || s == "while" || s == "else" || s == "return") {
+		return true;
+	}
+	if (s == "+" || s == "-" || s == "*" || s == "/" || s == "=" || s == "==" || s == ">" || s == "<" || s == "!=" || s == ">=" || s == "<=") {
+		return true;
+	}
+	if (s == ";" || s == "," || s == "(" || s == ")" || s == "{" || s == "}" || s == "ID" || s == "NUM") {
+		return true;
+	}
+	return false;
+}
+
 Symbol::Symbol(const Symbol& sym) :isVt(sym.isVt), content(sym.content) {};
 
 Symbol::Symbol(const bool& isVt, const string& content) :isVt(isVt), content(content) {};

@@ -536,7 +536,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Symbol* add = popSymbol();
 					Nomial* item = (Nomial*)popSymbol();
 					AddExpression* add_expression1 = new AddExpression(reductPro.left);
-					add_expression1->name = nt.newTemp();
+					add_expression1->name = code.newTemp();
 					code.emit("+", item->name, add_expression2->name, add_expression1->name);
 					pushSymbol(add_expression1);
 					break;
@@ -547,7 +547,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Symbol* sub = popSymbol();
 					Nomial* item = (Nomial*)popSymbol();
 					AddExpression* add_expression1 = new AddExpression(reductPro.left);
-					add_expression1->name = nt.newTemp();
+					add_expression1->name = code.newTemp();
 					code.emit("-", item->name, add_expression2->name, add_expression1->name);
 					pushSymbol(add_expression1);
 					break;
@@ -566,7 +566,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Symbol* mul = popSymbol();
 					Factor* factor = (Factor*)popSymbol();
 					Nomial* item1 = new Nomial(reductPro.left);
-					item1->name = nt.newTemp();
+					item1->name = code.newTemp();
 					code.emit("*", factor->name, item2->name, item1->name);
 					pushSymbol(item1);
 					break;
@@ -577,7 +577,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Symbol* div = popSymbol();
 					Factor* factor = (Factor*)popSymbol();
 					Nomial* item1 = new Nomial(reductPro.left);
-					item1->name = nt.newTemp();
+					item1->name = code.newTemp();
 					code.emit("/", factor->name, item2->name, item1->name);
 					pushSymbol(item1);
 					break;
@@ -618,7 +618,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 						for (list<string>::iterator iter = argument_list->alist.begin(); iter != argument_list->alist.end(); iter++) {
 							code.emit("par", *iter, "_", "_");
 						}
-						factor->name = nt.newTemp();
+						factor->name = code.newTemp();
 						code.emit("call", ID->name,"_", "_");
 						code.emit("=", "@RETURN_PLACE", "_", factor->name);
 						
