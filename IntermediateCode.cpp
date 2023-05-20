@@ -10,7 +10,7 @@ IntermediateCode::IntermediateCode() {
 
 /**
  * @brief Generate a new label
- * @return string 
+ * @return string : label name
  */
 string IntermediateCode::newLabel() {
 	return string("Label") + to_string(labelIndex++);
@@ -18,7 +18,7 @@ string IntermediateCode::newLabel() {
 
 /**
  * @brief Generate a new temporary variable
- * @return string 
+ * @return string: temporary variable name
  */
 string IntermediateCode::newTemp() {
 	return string("T") + to_string(tempIndex++);
@@ -26,7 +26,7 @@ string IntermediateCode::newTemp() {
 
 /**
  * @brief Get the next quad object
- * @return int 
+ * @return int: next quad index
  */
 int IntermediateCode::nextQuad() {
 	return code.size();
