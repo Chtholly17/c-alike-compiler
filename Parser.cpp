@@ -793,13 +793,14 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 						outputError(string("gramma error, inputed parameter do not match with decleration of function") + ID->name + "in line" + to_string(lineCount));
 					}
 					else {
-						// generate the intermediate code
+						// generate the intermediate code, indicate the parameters
 						for (list<string>::iterator iter = argument_list->alist.begin(); iter != argument_list->alist.end(); iter++) {
 							code.emit("par", *iter, "_", "_");
 						}
 						factor->name = code.newTemp();
 						// function call
 						code.emit("call", ID->name,"_", "_");
+						// get the return value of function
 						code.emit("=", "@RETURN_PLACE", "_", factor->name);
 						
 						pushSymbol(factor);

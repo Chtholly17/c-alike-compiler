@@ -75,5 +75,32 @@ list<int>merge(list<int>&l1, list<int>&l2);
  */
 bool isVT(string s);
 
+/**
+ * @brief if the string is variable
+ * 
+ * @param s 
+ * @return true 
+ * @return false 
+ */
+bool isVar(string name);
+
+/**
+ * @brief if the string is number
+ * 
+ * @param s 
+ * @return true 
+ * @return false 
+ */
+bool isNum(string name);
+
+/**
+ * @brief if the string is control operator
+ * 
+ * @param op 
+ * @return true 
+ * @return false 
+ */
+bool isControlOp(string op);
+
 
 #endif // !UTILS_H
