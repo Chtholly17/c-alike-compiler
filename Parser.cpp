@@ -185,26 +185,41 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 			int popSymNum = reductPro.right.size();
 			// reduce the symbol stack, and generate the intermediate code
 			switch (bh.nextStat) {
-				case 3: //declare ::= int ID M A function_declare
+				/**
+				 * @brief function declare
+				 * @details declare ::= int ID M A function_declare
+				 */
+				case 3:
 				{
+					// pop the symbols
 					FunctionDeclare *function_declare = (FunctionDeclare*)popSymbol();
 					Symbol* A = popSymbol();
 					M* m = (M*)popSymbol();
 					Id* ID = (Id*)popSymbol();
 					Symbol* _int = popSymbol();
+					// add the function to the function table, use m to record the enter point
 					funcTable.push_back(Func{ ID->name,D_INT,function_declare->plist,m->quad });
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
-				case 4: //declare ::= int ID var_declare
+				/**
+				 * @brief variable declare
+				 * @details declare ::= int ID var_declare
+				 */
+				case 4:
 				{
 					Symbol* var_declare = popSymbol();
 					Id* ID = (Id*)popSymbol();
 					Symbol* _int = popSymbol();
+					// add the variable to the variable table, and record the level
 					varTable.push_back(Var{ ID->name,D_INT,nowLevel });
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
+				/**
+				 * @brief function declare
+				 * @details declare ::= void ID M A function_declare
+				 */
 				case 5: //declare ::= void ID M A function_declare
 				{
 					FunctionDeclare* function_declare = (FunctionDeclare*)popSymbol();
@@ -216,13 +231,21 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
+				/**
+				 * @brief add the now level, using symbol A to control the level
+				 * @details A ::=
+				 */
 				case 6: //A ::=
 				{
 					nowLevel++;
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
-				case 8: //function_declare ::= ( parameter ) sentence_block
+				/**
+				 * @brief function declare
+				 * @details function_declare ::= ( parameter ) sentence_block
+				 */
+				case 8:
 				{
 					SentenceBlock* sentence_block = (SentenceBlock*)popSymbol();
 					Symbol* rparen = popSymbol();
@@ -233,6 +256,10 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(function_declare);
 					break;
 				}
+				/**
+				 * @brief parameter list
+				 * @details parameter :: = parameter_list
+				 */
 				case 9: //parameter :: = parameter_list
 				{
 					ParameterList* parameter_list = (ParameterList*)popSymbol();
@@ -241,14 +268,22 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(parameter);
 					break;
 				}
-				case 10: //parameter ::= void
+				/**
+				 * @brief void parameter 
+				 * @details parameter ::= void
+				 */
+				case 10:
 				{
 					Symbol* _void = popSymbol();
 					Parameter* parameter = new Parameter(reductPro.left);
 					pushSymbol(parameter);
 					break;
 				}
-				case 11: //parameter_list ::= param
+				/**
+				 * @brief parameter list
+				 * @details parameter_list ::= param
+				 */
+				case 11:
 				{
 					Symbol* param = popSymbol();
 					ParameterList* parameter_list = new ParameterList(reductPro.left);
@@ -256,7 +291,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(parameter_list);
 					break;
 				}
-				case 12: //parameter_list1 ::= param , parameter_list2
+				/**
+				 * @brief parameter list
+				 * @details parameter_list ::= param , parameter_list
+				 */
+				case 12:
 				{
 					ParameterList* parameter_list2 = (ParameterList*)popSymbol();
 					Symbol* comma = popSymbol();
@@ -267,7 +306,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(parameter_list1);
 					break;
 				}
-				case 13: //param ::= int ID
+				/**
+				 * @brief int parameter
+				 * @details param ::= int ID
+				 */
+				case 13:
 				{
 					Id* ID = (Id*)popSymbol();
 					Symbol* _int = popSymbol();
@@ -276,7 +319,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
-				case 14: //sentence_block ::= { inner_declare sentence_list }
+				/**
+				 * @brief sentence block end, pop the variable not in the current level
+				 * @details sentence_block ::= { inner_declare sentence_list }
+				 */
+				case 14: 
 				{
 					Symbol* rbrace = popSymbol();
 					SentenceList* sentence_list = (SentenceList*)popSymbol();
@@ -284,7 +331,9 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Symbol* lbrace = popSymbol();
 					SentenceBlock* sentence_block = new SentenceBlock(reductPro.left);
 					sentence_block->nextList = sentence_list->nextList;
+					// now level decrease
 					nowLevel--;
+					// pop the variable not in the current level, local variable
 					int popNum = 0;
 					for (vector<Var>::reverse_iterator riter = varTable.rbegin(); riter != varTable.rend(); riter++) {
 						if (riter->level > nowLevel)
@@ -292,13 +341,18 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 						else
 							break;
 					}
+					// we cannot pop the table while traversing it, so we use a temp vector to store the variable to be poped
 					for (int i = 0; i < popNum; i++) {
 						varTable.pop_back();
 					}
 					pushSymbol(sentence_block);
 					break;
 				}
-				case 17: //inner_var_declare ::= int ID
+				/**
+				 * @brief inner variable declare
+				 * @details inner_var_declare ::= int ID
+				 */
+				case 17:
 				{
 					Id* ID = (Id*)popSymbol();
 					Symbol* _int = popSymbol();
@@ -306,18 +360,27 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					varTable.push_back(Var{ ID->name,D_INT,nowLevel });
 					break;
 				}
-				case 18: //sentence_list ::= sentence M sentence_list
+				/**
+				 * @brief sentence list
+				 * @details sentence_list ::= sentence M sentence_list
+				 */
+				case 18:
 				{
 					SentenceList* sentence_list2 = (SentenceList*)popSymbol();
 					M* m = (M*)popSymbol();
 					Sentence* sentence = (Sentence*)popSymbol();
 					SentenceList* sentence_list1 = new SentenceList(reductPro.left);
 					sentence_list1->nextList = sentence_list2->nextList;
+					// back patch the next list of the sentence
 					code.back_patch(sentence->nextList, m->quad);
 					pushSymbol(sentence_list1);
 					break;
 				}
-				case 19: //sentence_list ::= sentence
+				/**
+				 * @brief sentence list
+				 * @details sentence_list ::= sentence
+				 */
+				case 19:
 				{
 					Sentence* sentence = (Sentence*)popSymbol();
 					SentenceList* sentence_list = new SentenceList(reductPro.left);
@@ -325,7 +388,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(sentence_list);
 					break;
 				}
-				case 20: //sentence ::= if_sentence
+				/**
+				 * @brief sentence
+				 * @details sentence ::= if_sentence
+				 */
+				case 20:
 				{
 					IfSentence* if_sentence = (IfSentence*)popSymbol();
 					Sentence* sentence = new Sentence(reductPro.left);
@@ -333,7 +400,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(sentence);
 					break;
 				}
-				case 21: //sentence ::= while_sentence
+				/**
+				 * @brief sentence
+				 * @details sentence ::= while_sentence
+				 */
+				case 21: 
 				{
 					WhileSentence* while_sentence = (WhileSentence*)popSymbol();
 					Sentence* sentence = new Sentence(reductPro.left);
@@ -341,32 +412,49 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(sentence);
 					break;
 				}
-				case 22: //sentence ::= return_sentence
+				/**
+				 * @brief sentence
+				 * @details sentence ::= return_sentence
+				 */
+				case 22:
 				{
 					Symbol* return_sentence = popSymbol();
 					Sentence* sentence = new Sentence(reductPro.left);
 					pushSymbol(sentence);
 					break;
 				}
-				case 23: //sentence ::= assign_sentence
+				/**
+				 * @brief sentence
+				 * @details sentence ::= assign_sentence
+				 */
+				case 23:
 				{
 					Symbol* assign_sentence = popSymbol();
 					Sentence* sentence = new Sentence(reductPro.left);
 					pushSymbol(sentence);
 					break;
 				}
-				case 24: //assign_sentence ::= ID = expression ;
+				/**
+				 * @brief assign_sentence
+				 * @details assign_sentence ::= ID = expression ;
+				 */
+				case 24:
 				{
 					Symbol* comma = popSymbol();
 					Expression* expression = (Expression*)popSymbol();
 					Symbol* assign = popSymbol();
 					Id* ID = (Id*)popSymbol();
 					Symbol* assign_sentence = new Symbol(reductPro.left);
+					// emit the intermediate code
 					code.emit("=", expression->name, "_", ID->name);
 					pushSymbol(assign_sentence);
 					break;
 				}
-				case 25: //return_sentence ::= return ;
+				/**
+				 * @brief return sentence
+				 * @details return_sentence ::= return ;
+				 */
+				case 25:
 				{
 					Symbol* comma = popSymbol();
 					Symbol* _return = popSymbol();
@@ -374,7 +462,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
-				case 26: //return_sentence ::= return expression ;
+				/**
+				 * @brief return sentence
+				 * @details return_sentence ::= return expression ;
+				 */
+				case 26:
 				{
 					Symbol* comma = popSymbol();
 					Expression* expression = (Expression*)popSymbol();
@@ -383,7 +475,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(new Symbol(reductPro.left));
 					break;
 				}
-				case 27: //while_sentence ::= while M ( expression ) A sentence_block
+				/**
+				 * @brief while sentence
+				 * @details while_sentence ::= while M ( expression ) A sentence_block
+				 */
+				case 27:
 				{
 					SentenceBlock* sentence_block = (SentenceBlock*)popSymbol();
 					Symbol* A = popSymbol();
@@ -395,11 +491,16 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					WhileSentence* while_sentence = new WhileSentence(reductPro.left);
 					code.back_patch(sentence_block->nextList, m->quad);
 					while_sentence->nextList = expression->falseList;
+					// generate the intermediate code to jump to the while sentence
 					code.emit("j", "_", "_", to_string(m->quad));
 					pushSymbol(while_sentence);
 					break;
 				}
-				case 28: //if_sentence ::= if ( expression ) A sentence_block
+				/**
+				 * @brief if sentence
+				 * @details if_sentence ::= if ( expression ) A sentence_block
+				 */
+				case 28:
 				{
 					SentenceBlock* sentence_block = (SentenceBlock*)popSymbol();
 					Symbol* A = popSymbol();
@@ -413,7 +514,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(if_sentence);
 					break;
 				}
-				case 29: //if_sentence ::= if ( expression ) A1 sentence_block1 N else M A2 sentence_block2
+				/**
+				 * @brief if sentence
+				 * @details if_sentence ::= if ( expression ) A1 sentence_block1 N else M A2 sentence_block2
+				 */
+				case 29:
 				{
 					SentenceBlock* sentence_block2 = (SentenceBlock*)popSymbol();
 					Symbol* A2 = popSymbol();
@@ -433,7 +538,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(if_sentence);
 					break;
 				}
-				case 30: //N ::= 
+				/**
+				 * @brief N ::=, control the transfer of the if sentence
+				 * @details N ::= 
+				 */
+				case 30:
 				{
 					N* n = new N(reductPro.left);
 					n->nextList.push_back(code.nextQuad());
@@ -441,14 +550,22 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(n);
 					break;
 				}
-				case 31: //M ::=
+				/**
+				 * @brief M ::=, control the transfer of the while sentence
+				 * @details M ::= 
+				 */
+				case 31: 
 				{
 					M* m = new M(reductPro.left);
 					m->quad = code.nextQuad();
 					pushSymbol(m);
 					break;
 				}
-				case 32: //expression ::= add_expression
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression
+				 */
+				case 32: 
 				{
 					AddExpression* add_expression = (AddExpression*)popSymbol();
 					Expression* expression = new Expression(reductPro.left);
@@ -456,7 +573,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 33: //expression ::= add_expression1 > add_expression2
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression1 > add_expression2
+				 */
+				case 33: 
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* gt = popSymbol();
@@ -467,7 +588,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 34: //expression ::= add_expression1 < add_expression2
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression1 < add_expression2
+				 */
+				case 34:
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* lt = popSymbol();
@@ -478,7 +603,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 35: //expression ::= add_expression1 == add_expression2
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression1 == add_expression2
+				 */
+				case 35: 
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol *eq = popSymbol();
@@ -489,7 +618,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 36: //expression ::= add_expression1 >= add_expression2
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression1 >= add_expression2
+				 */
+				case 36: 
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* get = popSymbol();
@@ -500,7 +633,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 37: //expression ::= add_expression1 <= add_expression2
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression1 <= add_expression2
+				 */
+				case 37:
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* let = popSymbol();
@@ -511,7 +648,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 38: //expression ::= add_expression1 != add_expression2
+				/**
+				 * @brief expression
+				 * @details expression ::= add_expression1 != add_expression2
+				 */
+				case 38:
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* neq = popSymbol();
@@ -522,7 +663,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(expression);
 					break;
 				}
-				case 39: //add_expression ::= item
+				/**
+				 * @brief add expression
+				 * @details add_expression ::= item
+				 */
+				case 39:
 				{
 					Nomial* item = (Nomial*)popSymbol();
 					AddExpression* add_expression = new AddExpression(reductPro.left);
@@ -530,7 +675,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(add_expression);
 					break;
 				}
-				case 40: //add_expression1 ::= item + add_expression2
+				/**
+				 * @brief add expression
+				 * @details add_expression1 ::= item + add_expression2
+				 */
+				case 40:
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* add = popSymbol();
@@ -541,7 +690,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(add_expression1);
 					break;
 				}
-				case 41: //add_expression ::= item - add_expression
+				/**
+				 * @brief add expression
+				 * @details add_expression1 ::= item - add_expression2
+				 */
+				case 41:
 				{
 					AddExpression* add_expression2 = (AddExpression*)popSymbol();
 					Symbol* sub = popSymbol();
@@ -552,7 +705,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(add_expression1);
 					break;
 				}
-				case 42: //item ::= factor
+				/**
+				 * @brief item
+				 * @details item ::= factor
+				 */
+				case 42: 
 				{
 					Factor* factor = (Factor*)popSymbol();
 					Nomial* item = new Nomial(reductPro.left);
@@ -560,7 +717,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(item);
 					break;
 				}
-				case 43: //item1 ::= factor * item2
+				/**
+				 * @brief item
+				 * @details item1 ::= factor * item2
+				 */
+				case 43:
 				{
 					Nomial* item2 = (Nomial*)popSymbol();
 					Symbol* mul = popSymbol();
@@ -571,7 +732,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(item1);
 					break;
 				}
-				case 44: //item1 ::= factor / item2
+				/**
+				 * @brief item
+				 * @details item1 ::= factor / item2
+				 */
+				case 44:
 				{
 					Nomial* item2 = (Nomial*)popSymbol();
 					Symbol* div = popSymbol();
@@ -582,7 +747,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(item1);
 					break;
 				}
-				case 45: //factor ::= NUM
+				/**
+				 * @brief factor
+				 * @details factor ::= NUM
+				 */
+				case 45:
 				{
 					Num* num = (Num*)popSymbol();
 					Factor* factor = new Factor(reductPro.left);
@@ -590,7 +759,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(factor);
 					break;
 				}
-				case 46: //factor ::= ( expression )
+				/**
+				 * @brief factor
+				 * @details factor ::= ( expression )
+				 */
+				case 46: 
 				{
 					Symbol* rparen = popSymbol();
 					Expression* expression = (Expression*)popSymbol();
@@ -600,7 +773,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(factor);
 					break;
 				}
-				case 47: //factor ::= ID ( argument_list )
+				/**
+				 * @brief factor, call the function
+				 * @details factor ::= ID ( argument_list )
+				 */
+				case 47: 
 				{
 					Symbol* rparen = popSymbol();
 					ArgumentList* argument_list = (ArgumentList*)popSymbol();
@@ -608,6 +785,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Id* ID = (Id*)popSymbol();
 					Factor* factor = new Factor(reductPro.left);
 					Func* f = lookUpFunc(ID->name);
+					// check if the function is declared and the input parameter is correct
 					if (!f) {
 						outputError(string("gramma error, undeclared function")+ ID->name + "in line" + to_string(lineCount));
 					}
@@ -615,10 +793,12 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 						outputError(string("gramma error, inputed parameter do not match with decleration of function") + ID->name + "in line" + to_string(lineCount));
 					}
 					else {
+						// generate the intermediate code
 						for (list<string>::iterator iter = argument_list->alist.begin(); iter != argument_list->alist.end(); iter++) {
 							code.emit("par", *iter, "_", "_");
 						}
 						factor->name = code.newTemp();
+						// function call
 						code.emit("call", ID->name,"_", "_");
 						code.emit("=", "@RETURN_PLACE", "_", factor->name);
 						
@@ -626,7 +806,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					}
 					break;
 				}
-				case 48: //factor ::= ID
+				/**
+				 * @brief factor, get the value of the variable
+				 * @details factor ::= ID
+				 */
+				case 48:
 				{
 					Id* ID = (Id*)popSymbol();
 					if (lookUpVar(ID->name) == NULL) {
@@ -637,13 +821,21 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(factor);
 					break;
 				}
+				/**
+				 * @brief argument list
+				 * @details argument_list ::= 
+				 */
 				case 49: //argument_list ::= 
 				{
 					ArgumentList* argument_list = new ArgumentList(reductPro.left);
 					pushSymbol(argument_list);
 					break;
 				}
-				case 50: //argument_list ::= expression
+				/**
+				 * @brief argument list
+				 * @details argument_list ::= expression
+				 */
+				case 50:
 				{
 					Expression* expression = (Expression*)popSymbol();
 					ArgumentList* argument_list = new ArgumentList(reductPro.left);
@@ -651,7 +843,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(argument_list);
 					break;
 				}
-				case 51: //argument_list1 ::= expression , argument_list2
+				/**
+				 * @brief argument list expand
+				 * @details argument_list ::= expression , argument_list
+				 */
+				case 51:
 				{
 					ArgumentList* argument_list2 = (ArgumentList*)popSymbol();
 					Symbol* comma = popSymbol();
@@ -662,7 +858,10 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					pushSymbol(argument_list1);
 					break;
 				}
-				default: // other production, just pop the symbol stack and push the left symbol
+				/**
+				 * @brief other production, just pop the symbol stack and push the left symbol
+				 */
+				default:
 				{
 					for (int i = 0; i < popSymNum; i++) {
 						popSymbol();
@@ -672,7 +871,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 				}
 			}
 		}
-		else if (bh.behavior == accept) {//P ::= N declare_list
+		/**
+		 * @brief accept the input
+		 * @details P ::= N declare_list
+		 */
+		else if (bh.behavior == accept) {
 			acc = true;
 			Func*f = lookUpFunc("main");
 			popSymbol();
