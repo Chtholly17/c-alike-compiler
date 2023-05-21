@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 }
 */
 
+// test origin main
 int main() {
     Compiler compiler = Compiler("productions.txt");
     compiler.compile("test.txt", "program.asm");
