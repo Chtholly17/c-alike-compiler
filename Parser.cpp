@@ -79,7 +79,7 @@ void Parser::pushSymbol(Symbol* sym) {
 	symStack.push(sym);
 	// if could not find the goto, then there must be some error against the grammar
 	if (analyseTable->LR1_Table.count(GOTO(staStack.top(), *sym)) == 0) {
-		outputError(string("gramma error, unexcepted stmbol ") + sym->content);
+		outputError(string("gramma error, unexcepted symbol ") + sym->content);
 		return;
 	}
 	// get the corresponding behavior, and push the next status to the status stack
@@ -167,7 +167,7 @@ void Parser::analyseLR(list<Token>&tokens, ostream& out0, ostream& out1) {
 
 		// if could not find the goto, then there must be some error against the grammar
 		if (analyseTable->LR1_Table.count(GOTO(staStack.top(), *nextSymbol)) == 0) {
-			outputError(string("gramma error, unexcepted stmbol ") + nextSymbol->content);
+			outputError(string("gramma error, unexcepted symbol ") + nextSymbol->content);
 			return;
 		}
 
