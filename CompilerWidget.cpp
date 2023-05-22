@@ -55,8 +55,8 @@ void CompilerWidget::changeSourceFile(QString sourceFile){
  * @details  open a file select dialog and select a file, get the file path and show it in the text edit
  */
 void CompilerWidget::selectFile(){
-    // open a file select dialog and select a file
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("Text Files (*.txt)"));
+    // open a file select dialog and select a file(cpp c or txt)
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("C++ Files (*.cpp *.c *.txt)"));
     // set the source file of the compiler
     // sourceFile = fileName;
     changeSourceFile(fileName);
