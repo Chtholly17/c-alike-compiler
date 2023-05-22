@@ -83,6 +83,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="compiler.cpp" />
     <ClCompile Include="ObjectCodeGenerator.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Symbol.cpp" />
@@ -92,14 +93,13 @@
     <QtRcc Include="CompilerWidget.qrc" />
     <QtUic Include="CompilerWidget.ui" />
     <QtMoc Include="CompilerWidget.h" />
-    <ClCompile Include="Compiler.cpp" />
     <ClCompile Include="CompilerWidget.cpp" />
     <ClCompile Include="IntermediateCode.cpp" />
     <ClCompile Include="LexicalAnalyser.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Compiler.h" />
+    <ClInclude Include="compiler.h" />
     <ClInclude Include="IntermediateCode.h" />
     <ClInclude Include="LexicalAnalyser.h" />
     <ClInclude Include="ObjectCodeGenerator.h" />

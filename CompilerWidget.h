@@ -5,7 +5,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QTCore/QTextStream>
 #include "ui_CompilerWidget.h"
-#include "Compiler.h"
+#include "compiler.h"
 
 class CompilerWidget : public QMainWindow
 {
