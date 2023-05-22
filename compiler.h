@@ -5,15 +5,41 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+extern string errorMessage;
+extern string infoMessage;
+
+enum class CompilerState
+{
+    Wait,
+    LexicalAnalyse,
+    SyntaxAnalyse,
+    IntermediateCodeGenerate,
+    ObjectCodeGenerate,
+    Finish,
+    Error
+};
+
 class Compiler
 {
 private:
+    string errorMes;
+    CompilerState state;
     LexicalAnalyser* lexicalAnalyser;
     AnalyseTable* analyseTable;
     Parser* parser;
-public:
+    string sourceFile;
+public:  
     Compiler(const char* ProductionFile);
-    void compile(const char* sourceFile, const char* objectFile);
+    Compiler();
+    ~Compiler();
+    void compile(const char* sourceFile);
+    CompilerState getState();
+    string getErrorMessage();
+    string getSourceFile();
+    void setSourceFile(string sourceFile);
+    void lexicalAnalyse();
+    void syntaxAnalyse();
+    void objectCodeGenerate();
 };
 
 
