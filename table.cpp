@@ -33,7 +33,7 @@ void AnalyseTable::readProductions(const char*fileName) {
 	ifstream fin;
 	fin.open(fileName, ios::in);
 	if (!fin.is_open()) {
-		outputError("fail to open file" + string(fileName));
+		outputError("fail to open file " + string(fileName));
 	}
 
 	// read productions
@@ -257,7 +257,7 @@ void AnalyseTable::createDFA() {
 				for (set<Symbol>::iterator followIter = FOLLOW.begin(); followIter != FOLLOW.end(); followIter++) {
 					// exist conflict in LR1 table
 					if (LR1_Table.count(GOTO(nowI, *followIter)) == 1) {
-						string err = "is not LR(1) grammar, exist conflict in GOTO(";
+						string err = "is not LR(1) grammar, exist conflict in GOTO( ";
 						outputError(err);
 					}
 					// if it is the reduction of the start symbol, then it is accept
@@ -303,7 +303,7 @@ void AnalyseTable::createDFA() {
 					dfa.goTo[GOTO(nowI, nextSymbol)] = index;
 					// if there is already a behavior in LR1 table, then there is conflict
 					if (LR1_Table.count(GOTO(nowI, nextSymbol)) == 1) {
-						outputError("confict transition");
+						outputError("confict transition ");
 					}
 					// shift behavior
 					LR1_Table[GOTO(nowI, nextSymbol)] = Behavior{ shift,index };
@@ -318,7 +318,7 @@ void AnalyseTable::createDFA() {
 				dfa.stas.push_back(newI);
 				dfa.goTo[GOTO(nowI, nextSymbol)] = (int)dfa.stas.size() - 1;
 				if (LR1_Table.count(GOTO(nowI, nextSymbol)) == 1) {
-					outputError("confict");
+					outputError("confict transition");
 				}
 				LR1_Table[GOTO(nowI, nextSymbol)] = Behavior{ shift,int(dfa.stas.size() - 1) };
 			}
@@ -371,7 +371,7 @@ void AnalyseTable::outputDFA(const char* fileName) {
 	ofstream fout;
 	fout.open(fileName);
 	if (!fout.is_open()) {
-		outputError("fail to open file" + string(fileName));
+		outputError("fail to open file " + string(fileName));
 	}
 	outputDFA(fout);
 	fout.close();

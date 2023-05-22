@@ -40,7 +40,7 @@ public:
 	void back_patch(list<int>nextList,int quad);
 	void output();
 	void output(const char* fileName);
-	void divideBlocks(vector<pair<int, string> > funcEnter);
+	void divideBlocks(vector<pair<int, pair<string,DType>>> funcEnter);
 	void outputBlocks();
 	void outputBlocks(const char* fileName);
 	map<string, vector<Block> >*getFuncBlock();

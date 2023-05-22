@@ -1,8 +1,10 @@
 #include "utils.h"
 
+string errorMessage = "";
+string infoMessage = "";
+
 void outputError(string err) {
-	cerr << err << endl;
-	exit(-1);
+	errorMessage = err;
 }
 
 list<int>merge(list<int>&l1, list<int>&l2) {

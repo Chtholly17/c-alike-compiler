@@ -39,10 +39,10 @@ Var* Parser::lookUpVar(string ID) {
 }
 
 
-vector<pair<int, string> >Parser::getFuncEnter() {
-	vector<pair<int, string> >ret;
+vector<pair<int, pair<string,DType>>> Parser::getFuncEnter() {
+	vector<pair<int, pair<string,DType>>> ret;
 	for (vector<Func>::iterator iter = funcTable.begin(); iter != funcTable.end(); iter++) {
-		ret.push_back(pair<int, string>(iter->enterPoint, iter->name));
+		ret.push_back(pair<int, pair<string,DType>>(iter->enterPoint, pair<string,DType>(iter->name,iter->returnType)));
 	}
 	sort(ret.begin(), ret.end());
 	return ret;
@@ -79,7 +79,8 @@ void Parser::pushSymbol(Symbol* sym) {
 	symStack.push(sym);
 	// if could not find the goto, then there must be some error against the grammar
 	if (analyseTable->LR1_Table.count(GOTO(staStack.top(), *sym)) == 0) {
-		outputError(string("gramma error, unexcepted stmbol ") + sym->content + " in line " + to_string(lineCount));
+		outputError(string("gramma error, unexcepted stmbol ") + sym->content);
+		return;
 	}
 	// get the corresponding behavior, and push the next status to the status stack
 	Behavior bh = analyseTable->LR1_Table[GOTO(staStack.top(), *sym)];
@@ -128,7 +129,7 @@ void Parser::outputStateStack(ostream& out) {
  * @param tokens 
  * @param out 
  */
-void Parser::analyse(list<Token>&tokens, ostream& out) {
+void Parser::analyseLR(list<Token>&tokens, ostream& out0, ostream& out1) {
 	// if accpted or not
 	bool acc = false;
 	// initialize the symbol stack and status stack
@@ -136,8 +137,8 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 	staStack.push(0);
 	// the main loop, traverse the token list
 	for (list<Token>::iterator iter = tokens.begin(); iter != tokens.end(); ) {
-		outputSymbolStack(out);
-		outputStateStack(out);
+		outputSymbolStack(out0);
+		outputStateStack(out1);
 		TokenType LT = iter->getType();
 		string token = iter->getValue();
 
@@ -166,7 +167,8 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 
 		// if could not find the goto, then there must be some error against the grammar
 		if (analyseTable->LR1_Table.count(GOTO(staStack.top(), *nextSymbol)) == 0) {
-			outputError(string("gramma error, unexcepted stmbol ") + nextSymbol->content + " in line " + to_string(lineCount));
+			outputError(string("gramma error, unexcepted stmbol ") + nextSymbol->content);
+			return;
 		}
 
 		// get the behavior with from the goto table
@@ -444,6 +446,11 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Expression* expression = (Expression*)popSymbol();
 					Symbol* assign = popSymbol();
 					Id* ID = (Id*)popSymbol();
+					// check whether the variable is declared
+					if (lookUpVar(ID->name) == NULL) {
+						outputError(string("variable ") + ID->name + string(" not declared"));
+						return;
+					}
 					Symbol* assign_sentence = new Symbol(reductPro.left);
 					// emit the intermediate code
 					code._emit("=", expression->name, "_", ID->name);
@@ -787,10 +794,12 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 					Func* f = lookUpFunc(ID->name);
 					// check if the function is declared and the input parameter is correct
 					if (!f) {
-						outputError(string("gramma error, undeclared function")+ ID->name + "in line" + to_string(lineCount));
+						outputError(string("gramma error, undeclared function ")+ ID->name);
+						return;
 					}
 					else if (!march(argument_list->alist, f->paramTypes)) {
-						outputError(string("gramma error, inputed parameter do not match with decleration of function") + ID->name + "in line" + to_string(lineCount));
+						outputError(string("gramma error, inputed parameter do not match with decleration of function ") + ID->name);
+						return;
 					}
 					else {
 						// generate the intermediate code, indicate the parameters
@@ -815,7 +824,8 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 				{
 					Id* ID = (Id*)popSymbol();
 					if (lookUpVar(ID->name) == NULL) {
-						outputError(string("gramma error, undeclared variable")+ ID->name + "in line" + to_string(lineCount));
+						outputError(string("gramma error, undeclared variable ")+ ID->name);
+						return;
 					}
 					Factor* factor = new Factor(reductPro.left);
 					factor->name = ID->name;
@@ -887,6 +897,7 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
 	}
 	if (!acc) {
 		outputError("gramma error: unexpected end of file");
+		return;
 	}
 }
 
@@ -895,15 +906,39 @@ void Parser::analyse(list<Token>&tokens, ostream& out) {
  * @param tokens 
  * @param fileName: the name of the file to output the intermediate code
  */
-void Parser::analyse(list<Token>&tokens, const char* fileName) {
-	ofstream fout;
-	fout.open(fileName);
-	if (!fout.is_open()) {
-		outputError("fail to open file" + string(fileName));
+void Parser::analyse(list<Token>&tokens, const char* fileName)
+{
+	ofstream fout0;
+	fout0.open(fileName);
+	if (!fout0.is_open()) {
+		outputError("fail to open file " + string(fileName));
+		return;
 	}
-	analyse(tokens, fout);
+	analyseLR(tokens, fout0 , fout0);
+	fout0.close();
+}
 
-	fout.close();
+/**
+ * @brief analyse the token list and generate the intermediate code
+ * @param tokens 
+ * @param fileName: the name of the file to output the intermediate code
+ */
+void Parser::analyse(list<Token>&tokens,const char* f0, const char* f1) {
+	ofstream fout0, fout1;
+	fout0.open(f0);
+	fout1.open(f1);
+	if (!fout0.is_open()) {
+		outputError("fail to open file " + string(f0));
+		return;
+	}
+	if (!fout1.is_open()) {
+		outputError("fail to open file " + string(f1));
+		return;
+	}
+	analyseLR(tokens, fout0, fout1);
+
+	fout0.close();
+	fout1.close();
 }
 
 /**

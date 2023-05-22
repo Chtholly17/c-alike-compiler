@@ -1,28 +1,264 @@
-<UI version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>CompilerWidgetClass</class>
- <widget class="QMainWindow" name="CompilerWidgetClass" >
-  <property name="objectName" >
-   <string notr="true">CompilerWidgetClass</string>
-  </property>
-  <property name="geometry" >
+ <widget class="QMainWindow" name="CompilerWidgetClass">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>822</width>
+    <height>666</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>CompilerWidget</string>
-  </property>  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="windowTitle">
+   <string>Compiler</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>420</y>
+      <width>821</width>
+      <height>381</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="messageTab">
+     <attribute name="title">
+      <string>Message</string>
+     </attribute>
+     <widget class="QTextBrowser" name="messageBrowser">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>821</width>
+        <height>151</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="errorTab">
+     <attribute name="title">
+      <string>Error</string>
+     </attribute>
+     <widget class="QTextBrowser" name="errorBrowser">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>821</width>
+        <height>151</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>821</width>
+      <height>421</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="sourceTab">
+     <attribute name="title">
+      <string>Source Code</string>
+     </attribute>
+     <widget class="QTextEdit" name="sourceEdit">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>821</width>
+        <height>401</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>0</y>
+        <width>211</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>No file selected</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="infoTab">
+     <attribute name="title">
+      <string>Infomation</string>
+     </attribute>
+     <widget class="QTextBrowser" name="infoBrowser">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>821</width>
+        <height>401</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>822</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileManu">
+    <property name="title">
+     <string>File(F)</string>
+    </property>
+    <addaction name="actionSelect_file"/>
+    <addaction name="actionClean_file"/>
+    <addaction name="actionClose_file"/>
+    <addaction name="actionSave_file"/>
+    <addaction name="actionSave_as"/>
+   </widget>
+   <widget class="QMenu" name="menuCompile_C">
+    <property name="title">
+     <string>Compile(C)</string>
+    </property>
+    <widget class="QMenu" name="menuLexical_Analysis">
+     <property name="title">
+      <string>Lexical Analysis</string>
+     </property>
+     <addaction name="actionTokens"/>
+    </widget>
+    <widget class="QMenu" name="menuParser">
+     <property name="title">
+      <string>Parser</string>
+     </property>
+     <addaction name="actionState_Stack"/>
+     <addaction name="actionSymbol_Stack"/>
+     <addaction name="actionIntermediate_Code"/>
+    </widget>
+    <widget class="QMenu" name="menuObject_Code">
+     <property name="title">
+      <string>Object Code</string>
+     </property>
+     <addaction name="actionAssemble_Code"/>
+    </widget>
+    <addaction name="actionRun_Compiler"/>
+    <addaction name="menuLexical_Analysis"/>
+    <addaction name="menuParser"/>
+    <addaction name="menuObject_Code"/>
+   </widget>
+   <widget class="QMenu" name="menuGrammar_G">
+    <property name="title">
+     <string>Grammar(G)</string>
+    </property>
+    <addaction name="actionProduction"/>
+    <addaction name="actionDFA"/>
+   </widget>
+   <addaction name="fileManu"/>
+   <addaction name="menuCompile_C"/>
+   <addaction name="menuGrammar_G"/>
+  </widget>
+  <action name="actionSelect_file">
+   <property name="text">
+    <string>Select file ...</string>
+   </property>
+  </action>
+  <action name="actionSave_file">
+   <property name="text">
+    <string>Save file</string>
+   </property>
+  </action>
+  <action name="actionClean_file">
+   <property name="text">
+    <string>Clean file</string>
+   </property>
+  </action>
+  <action name="actionTokens">
+   <property name="text">
+    <string>Tokens</string>
+   </property>
+  </action>
+  <action name="actionState_Stack">
+   <property name="text">
+    <string>State Stack</string>
+   </property>
+  </action>
+  <action name="actionSymbol_Stack">
+   <property name="text">
+    <string>Symbol Stack</string>
+   </property>
+  </action>
+  <action name="actionIntermediate_Code">
+   <property name="text">
+    <string>Intermediate Code</string>
+   </property>
+  </action>
+  <action name="actionInformed">
+   <property name="text">
+    <string>Informed </string>
+   </property>
+  </action>
+  <action name="actionAssemble_Code">
+   <property name="text">
+    <string>Assemble Code</string>
+   </property>
+  </action>
+  <action name="actionProduction">
+   <property name="text">
+    <string>Production</string>
+   </property>
+  </action>
+  <action name="actionDFA">
+   <property name="text">
+    <string>DFA</string>
+   </property>
+  </action>
+  <action name="actionRun_Compiler">
+   <property name="text">
+    <string>Run Compiler</string>
+   </property>
+  </action>
+  <action name="actionClose_file">
+   <property name="text">
+    <string>Close file</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
  <resources>
-   <include location="CompilerWidget.qrc"/>
+  <include location="CompilerWidget.qrc"/>
  </resources>
  <connections/>
-</UI>
+</ui>

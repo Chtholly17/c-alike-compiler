@@ -51,9 +51,10 @@ private:
 	void outputSymbolStack(ostream& out);
 public:
 	Parser(AnalyseTable* table);
-	void analyse(list<Token>&tokens, ostream& out);
+	void analyseLR(list<Token>&tokens, ostream& out0, ostream& out1);
+	void analyse(list<Token>&tokens,const char* f0, const char* f1);
 	void analyse(list<Token>&tokens, const char* fileName);
-	vector<pair<int, string> > getFuncEnter();
+	vector<pair<int, pair<string,DType>>> getFuncEnter();
 	IntermediateCode* getIntermediateCode();
 };
 

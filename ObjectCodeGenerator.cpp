@@ -512,10 +512,12 @@ void ObjectCodeGenerator::generateCodeForQuatenary(int nowBaseBlockIndex, int &a
 	// if the source operand is not initialized, output error
 	if (nowQuatenary->q.op[0] != 'j'&&nowQuatenary->q.op != "call") {
 		if (isVar(nowQuatenary->q.src1) && Avalue[nowQuatenary->q.src1].empty()) {
-			outputError(string("variable") + nowQuatenary->q.src1 + "is not initialized before use");
+			outputError(string("variable ") + nowQuatenary->q.src1 + " is not initialized before use");
+			return;
 		}
 		if (isVar(nowQuatenary->q.src2) && Avalue[nowQuatenary->q.src2].empty()) {
-			outputError(string("variable") + nowQuatenary->q.src2 + "is not initialized before use");
+			outputError(string("variable ") + nowQuatenary->q.src2 + " is not initialized before use");
+			return;
 		}
 	}
 

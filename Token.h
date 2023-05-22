@@ -24,7 +24,7 @@ typedef enum
 	// tokens about comments
 	LCOMMENT, PCOMMENT,
 	// new line
-	NEXTLINE
+	NEXTLINE, EMPTY
 } TokenType;
 
 

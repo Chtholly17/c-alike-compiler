@@ -26,6 +26,10 @@ using namespace std;
  * @brief some common definitions and functions
  */
 
+// global Error message, it is announced in utils.h and defined in utils.cpp
+extern string errorMessage;
+extern string infoMessage;
+
 /**
  * @brief the type of table behavior
  */

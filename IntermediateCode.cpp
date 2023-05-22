@@ -74,9 +74,9 @@ void IntermediateCode::back_patch(list<int>nextList, int quad) {
  * @brief Divide basic blocks for each function
  * @param funcEnter: function enter points
  */
-void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
+void IntermediateCode::divideBlocks(vector<pair<int, pair<string,DType>>> funcEnter) {
 	// traverse all functions enter points
-	for (vector<pair<int, string> >::iterator iter = funcEnter.begin(); iter != funcEnter.end(); iter++) {
+	for (vector<pair<int, pair<string,DType>>>::iterator iter = funcEnter.begin(); iter != funcEnter.end(); iter++) {
 		// all basic blocks
 		vector<Block>blocks;
 		// get the enter points of each block
@@ -86,6 +86,8 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 		// get the end points of each block, if it is the last block(main), the end point is the end of the intermediate code
 		// otherwise, the end point is the next function enter point
 		int endIndex = iter + 1 == funcEnter.end()? code.size(): (iter + 1)->first;
+		bool hasReturn = false;
+		int returnValueIndex = -1;
 		for (int i = iter->first; i != endIndex; i++) {
 			// jump instruction
 			if (code[i].op[0] == 'j') {
@@ -107,7 +109,27 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 					block_enter.push(i + 1);
 				}
 			}
+
+			// check return
+			if (code[i].op == "return") {
+				hasReturn = true;
+				if (code[i].src1 == "_" && iter->second.second != DType::D_VOID) {
+					outputError("function " + iter->second.first + " expect a INT type return value, but got VOID");
+					return;
+				}
+				else if(code[i].src1 != "_" && iter->second.second == DType::D_VOID){
+					outputError("function " + iter->second.first + " expect a VOID type return value, but got INT");
+					return;
+				}
+			}
 		}
+
+		// if the function has no return instruction, report error
+		if (!hasReturn) {
+			outputError("function " + iter->second.first + " has no return instruction");
+			return;
+		}
+
 
 		//devide blocks
 		Block block;
@@ -139,7 +161,7 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 			}
 			// if the block is the first block of the function, use the function name as the block name
 			else {
-				block.name = iter->second;
+				block.name = iter->second.first;
 				firstFlag = false;
 			}
 			// set the enter point of last block, as the index of the current block
@@ -157,7 +179,7 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 			labelEnter[lastEnter] = block.name;
 		}
 		else {
-			block.name = iter->second;
+			block.name = iter->second.first;
 			firstFlag = false;
 		}
 		if (iter + 1 != funcEnter.end()) {
@@ -204,7 +226,7 @@ void IntermediateCode::divideBlocks(vector<pair<int, string> > funcEnter) {
 			
 		}
 		// set the function name and blocks
-		funcBlocks[iter->second] = blocks;
+		funcBlocks[iter->second.first] = blocks;
 	}
 }
 

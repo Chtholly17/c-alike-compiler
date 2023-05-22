@@ -54,8 +54,12 @@ char LexicalAnalyser::getChar() {
  */
 Token LexicalAnalyser::getToken(){
 	char nextChar = getChar();
+	
 	switch (nextChar) {
 		// the characters needed to read next
+		case 0:
+			return Token("#");
+			break;
 		case '=':
 			if (src.peek() == '=') {
 				src.get();
@@ -179,9 +183,11 @@ Token LexicalAnalyser::getToken(){
 void LexicalAnalyser::analyse() {
 	while (true) {
 		Token t = getToken();
-		result.push_back(t);
+		if(t.getType()!=EMPTY)
+			result.push_back(t);
 		if (t.getType() == ERROR) {
 			outputError(t.getValue());
+			return;
 		}
 		else if (t.getType() == ENDFILE) {
 			break;
@@ -201,7 +207,13 @@ void LexicalAnalyser::outputToStream(ostream&out) {
 	else {
 		list<Token>::iterator iter;
 		for (iter = result.begin(); iter != result.end(); iter++) {
-			out << (*iter).toString() << endl;
+			out << (*iter).toString();
+			if ((*iter).getType() == SEMI || (*iter).getType() == LBRACE) {
+				out << endl;
+			}
+			else {
+				out << string(" ");
+			}
 		}
 	}
 }
